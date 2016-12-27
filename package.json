@@ -1,0 +1,31 @@
+{
+  "name": "planer",
+  "version": "0.0.1",
+  "description": "个人计划的应用轮子",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamHwang1990/planer.git"
+  },
+  "keywords": [
+    "koa",
+    "mongo",
+    "redis"
+  ],
+  "author": "\"samhwang1990\" <samhwang1990@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SamHwang1990/planer/issues"
+  },
+  "homepage": "https://github.com/SamHwang1990/planer#readme",
+  "dependencies": {
+    "js-yaml": "^3.7.0",
+    "mongoose": "^4.7.5"
+  },
+  "devDependencies": {
+    "eslint": "^3.12.2"
+  }
+}
