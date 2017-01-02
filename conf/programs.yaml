@@ -1,0 +1,27 @@
+JWT :
+  timeout :
+      default: 5d
+      desc: Token 过期时长
+  
+  lifetime :
+      default: request
+      options: [request, timeout]
+      desc: "生命周期: request-每次请求都更新、timeout-服务器不需要主动更新Token,到期后自动失效,此时需要用户重新登录"
+  
+  lifetime-grace-time :
+      default: 1m
+      desc: 防JWT 并发的问题,request 生命周期的Token,在更新时会进入黑名单一段时间,此时并发上来的Token 如果在黑名单里面,则视为有效认证
+
+login :
+  prevent-replay-attack :
+      default: true
+      desc: 登录界面是否开启防重放攻击的机制
+  
+  doubt-attacked :
+      default: 1
+      options: [0, 1, 2]
+      desc: "当怀疑登录请求被攻击时的处理: 0-拒绝, 1-验证码, 2-通过"
+
+  pwd-encrypt-salt  :
+      used: planer
+      desc: 为保护用户密码安全,对密码进行不可逆加密,使用的salt

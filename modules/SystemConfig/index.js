@@ -38,9 +38,9 @@ function loadConfig() {
 }
 
 var getItemBase = cacheable(function getItemBaseProto(path) {
-  path = path.split('/');
-
   if (!path) return {};
+
+  path = path.split('/');
 
   if (!Object.keys(config).length) loadConfig();
 
@@ -71,5 +71,9 @@ exports.getString = function getString(path, defaultV) {
 exports.getInt = function getInt(path, defaultV) {
   var { used, 'default': configDefault } = getItemBase(path);
   return parseInt(used || defaultV || configDefault);
+};
+
+exports.getSection = function getSection(path) {
+  return getItemBase(path);
 };
 

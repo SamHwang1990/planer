@@ -21,4 +21,4 @@ const UserInfoSchema = new Schema({
   }
 });
 
-module.exports = UserInfoSchema;
+module.exports = mongoose.model('UserInfo', UserInfoSchema);

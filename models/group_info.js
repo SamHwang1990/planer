@@ -15,4 +15,4 @@ const GroupInfoSchema = new Schema({
   user_list: [Schema.Types.ObjectId]
 });
 
-module.exports = GroupInfoSchema;
+module.exports = mongoose.model('GroupInfo', GroupInfoSchema);

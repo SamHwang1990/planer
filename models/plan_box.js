@@ -49,4 +49,4 @@ const PlanSchema = new Schema({
   }
 });
 
-module.exports = PlanSchema;
+module.exports = mongoose.model('PlanBox', PlanSchema);

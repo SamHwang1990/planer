@@ -19,4 +19,4 @@ const UserPasswordSchema = new Schema({
   _id: false
 });
 
-module.exports = UserPasswordSchema;
+module.exports = mongoose.model('UserPassword', UserPasswordSchema);
