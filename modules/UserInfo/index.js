@@ -7,7 +7,6 @@ const UserInfoDal = Dal.UserInfo;
 
 exports.createUser = function createUser(userInfo) {
   return new Promise((resolve, reject) => {
-
   });
 };
 
