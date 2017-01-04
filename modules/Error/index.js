@@ -3,3 +3,4 @@
  */
 
 exports.BasicError = require('./BasicError');
+exports.DALParameterError = require('./DALParameterError');

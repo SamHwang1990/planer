@@ -10,11 +10,16 @@ const UserInfoSchema = new Schema({
     type: String,
     required: true,
     trim: true,
-    match: /^/
+    match: /^([\w\-_]+(?:\.[\w\-_]+)*)@((?:[a-z0-9]+(?:-[a-zA-Z0-9]+)*)+(?:\.[a-z]{2,6})+)$/i
     // todo: need unique
   },
   nickname: String,
   group_id: [Schema.Types.ObjectId],
+  status: {
+    type: String,
+    lowercase: true,
+    enum: ['inactive', 'active', 'destroy']
+  },
   remark: {
     type: String,
     trim: true
