@@ -1,11 +1,11 @@
-mongod-planer :
+mongod :
   host  : 127.0.0.1
   port  : 1234
   name  : planer  # 数据库名称
   user  : planer  # 数据库Owner
   pwd   : 123
 
-redis-planer :
+redis :
   host  : 127.0.0.1
   port  : 1235
   name  : planer
