@@ -2,13 +2,15 @@
  * Created by sam on 16/12/27.
  */
 
+"use strict";
+
 const UserPasswordModel = require('../models').UserPassword;
 const PlanerError = require('../modules/Error');
 
 // todo: 大致梳理了更新密码需要的逻辑, 写得比较随便, 且数据库的更新机制和消耗未完全摸清, 需要重构
 exports.updatePassword = function createUserInfo({userId, password}) {
   return new Promise((resolve, reject) => {
-    if (userId == null) return reject(new PlanerError.DALParameterError(`update user password failed: parameter can not be empty.`));
+    if (userId == null) return reject(new PlanerError.InvalidParameterError(`update user password failed: parameter can not be empty.`));
 
     // todo: need to convert userId from string to ObjectId
     var userInCollection = UserPasswordModel.findOne({user_id: userId});
@@ -43,7 +45,7 @@ exports.updatePassword = function createUserInfo({userId, password}) {
         }
         userPasswordInfo.history_password = newHistory;
         UserPasswordModel.update(userPasswordInfo, err => {
-          if (isPasswordRepeat) return reject(new PlanerError.DALParameterError(`update user password failed: password repeat in year`));
+          if (isPasswordRepeat) return reject(new PlanerError.InvalidParameterError(`update user password failed: password repeat in year`));
           if (err) return reject(err);
           resolve(userId);
         });
@@ -52,3 +54,11 @@ exports.updatePassword = function createUserInfo({userId, password}) {
 
   });
 };
+
+// yield a thunk to co
+exports.query = function(userId) {
+  return function(cb) {
+    UserPasswordModel.findOne({user_id: userId}, cb);
+  }
+};
+

@@ -4,7 +4,7 @@
 
 const BasicError = require('./BasicError');
 
-module.exports = class DALParameterError extends BasicError {
+module.exports = class InvalidParameterError extends BasicError {
   constructor(message) {
     super('FA_INVALID_PARAMETER', message);
   }

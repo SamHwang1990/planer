@@ -12,10 +12,6 @@ const SystemConfig = require('../SystemConfig');
 const PlanerError = require('../Error');
 const redisStore = require('../../connect_client/redisStore').connect();
 
-function createJti() {
-  return uuid.v4();
-}
-
 let tokenCookieKey = 'planer.token';
 
 let tokenCookieStore = {
@@ -32,75 +28,9 @@ let tokenCookieStore = {
   }
 };
 
-exports.create = function create(userInfo) {
-  let jwtId = createJti();
-  return function* createGenerator(next) {
-    var sessionMeta = yield createSession.call(this, userInfo, jwtId);
-    yield saveSession(sessionMeta);
-    var token = yield signToken(sessionMeta.sid, jwtId);
-    tokenCookieStore.set.call(this, token);
-    yield next();
-  }
-};
-
-exports.verify = function* verify(next) {
-  var token = tokenCookieStore.get.call(this);
-  var {
-    sid,
-    jti: jwtId
-  } = yield verifyToken(token);
-
-  var session = yield getSession(sid);
-  if (!session) {
-    throw new PlanerError.AuthorizationError('sid invalid');
-  }
-
-  var canRefreshToken = false;
-  if (session.currentTokenId != jwtId) {
-    let isTokenInBlacklist = false;
-    for (let [index, item] of session.blacklistTokenId.entries()) {
-      if (item.jti === jwtId) {
-        if (item.expiresIn < Date.now().getTime()) {
-          throw new PlanerError.AuthorizationError('token expired');
-        } else {
-          isTokenInBlacklist = true;
-        }
-      }
-    }
-    if (!isTokenInBlacklist) throw new PlanerError.AuthorizationError('token error');
-  } else {
-    canRefreshToken = true;
-  }
-
-  // todo: refresh session timeout
-
-  yield next();
-
-  if (!canRefreshToken) return;
-
-  let nextJwtId = createJti();
-  let newToken = yield signToken(sid, nextJwtId);
-  tokenCookieStore.set.call(this, newToken);
-};
-
-exports.destroy = function* destroy(next) {
-  var token = tokenCookieStore.get.call();
-  var { sid } = yield decodeToken(token);
-
-  var session = yield getSession(sid);
-  if (!session) {
-    yield next();
-    resetCookie.call(this);
-    return;
-  }
-
-  yield redisStore.destroy(session.sid);
-  resetCookie.call(this);
-
-  function resetCookie() {
-    tokenCookieStore.reset.call();
-  }
-} ;
+function createJti() {
+  return uuid.v4();
+}
 
 function* createSession(userInfo, jwtId) {
   yield {
@@ -162,3 +92,72 @@ function* verifyToken(token) {
     })
   });
 }
+
+exports.create = function create(userInfo) {
+  let jwtId = createJti();
+  return function* createGenerator(next) {
+    var sessionMeta = yield createSession.call(this, userInfo, jwtId);
+    yield saveSession(sessionMeta);
+    var token = yield signToken(sessionMeta.sid, jwtId);
+    tokenCookieStore.set.call(this, token);
+    yield next();
+  }
+};
+
+exports.verify = function* verify(next) {
+  var token = tokenCookieStore.get.call(this);
+  var {
+      sid,
+      jti: jwtId
+  } = yield verifyToken(token);
+
+  var session = yield getSession(sid);
+  if (!session) {
+    throw new PlanerError.AuthorizationError('sid invalid');
+  }
+
+  var canRefreshToken = false;
+  if (session.currentTokenId != jwtId) {
+    let isTokenInBlacklist = false;
+    for (let [index, item] of session.blacklistTokenId.entries()) {
+      if (item.jti === jwtId) {
+        if (item.expiresIn < Date.now().getTime()) {
+          throw new PlanerError.AuthorizationError('token expired');
+        } else {
+          isTokenInBlacklist = true;
+        }
+      }
+    }
+    if (!isTokenInBlacklist) throw new PlanerError.AuthorizationError('token error');
+  } else {
+    canRefreshToken = true;
+  }
+
+  // todo: refresh session timeout
+
+  yield next();
+
+  if (!canRefreshToken) return;
+
+  let nextJwtId = createJti();
+  let newToken = yield signToken(sid, nextJwtId);
+  tokenCookieStore.set.call(this, newToken);
+};
+
+exports.destroy = function* destroy() {
+  var token = tokenCookieStore.get.call();
+  var { sid } = yield decodeToken(token);
+
+  var session = yield getSession(sid);
+  if (!session) {
+    resetCookie.call(this);
+    return;
+  }
+
+  resetCookie.call(this);
+  yield redisStore.destroy(session.sid);
+
+  function resetCookie() {
+    tokenCookieStore.reset.call();
+  }
+};

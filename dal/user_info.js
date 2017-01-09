@@ -9,7 +9,7 @@ const PlanerError = require('../modules/Error');
 
 exports.query = function queryUserInfo({email}) {
   return new Promise((resolve, reject) => {
-    if (email == null) return reject(new PlanerError.DALParameterError(`query userinfo failed: parameter can not be empty.`));
+    if (email == null) return reject(new PlanerError.InvalidParameterError(`query userinfo failed: parameter can not be empty.`));
 
     UserInfoModel.find({email: email}, (err, userInfo) => {
       if (err) return reject(err);
@@ -20,7 +20,7 @@ exports.query = function queryUserInfo({email}) {
 
 exports.create = function createUserInfo(userInfo) {
   return new Promise((resolve, reject) => {
-    if (userInfo == null) return reject(new PlanerError.DALParameterError(`create userinfo failed: parameter can not be empty.`));
+    if (userInfo == null) return reject(new PlanerError.InvalidParameterError(`create userinfo failed: parameter can not be empty.`));
 
     userInfo = Object.assign({status: 'active'}, userInfo);
 
@@ -33,7 +33,7 @@ exports.create = function createUserInfo(userInfo) {
 
 exports.update = function updateUserInfo(userInfo) {
   return new Promise((resolve, reject) => {
-    if (userInfo == null) return reject(new PlanerError.DALParameterError(`update userinfo failed: parameter can not be empty.`));
+    if (userInfo == null) return reject(new PlanerError.InvalidParameterError(`update userinfo failed: parameter can not be empty.`));
 
     UserInfoModel.findOneAndUpdate({email: userInfo.email}, userInfo, err => {
       if (err) return reject(err);
@@ -44,7 +44,7 @@ exports.update = function updateUserInfo(userInfo) {
 
 exports.delete = function updateUserInfo({email}) {
   return new Promise((resolve, reject) => {
-    if (email == null) return reject(new PlanerError.DALParameterError(`delete userinfo failed: parameter can not be empty.`));
+    if (email == null) return reject(new PlanerError.InvalidParameterError(`delete userinfo failed: parameter can not be empty.`));
 
     UserInfoModel.findOneAndUpdate({email: email}, { status: 'destroy' }, err => {
       if (err) return reject(err);

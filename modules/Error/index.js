@@ -3,5 +3,5 @@
  */
 
 exports.BasicError = require('./BasicError');
-exports.DALParameterError = require('./DALParameterError');
+exports.InvalidParameterError = require('./InvalidParameterError');
 exports.AuthorizationError = require('./AuthorizationError');
