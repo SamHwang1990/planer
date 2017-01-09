@@ -4,5 +4,7 @@
 
 'use strict';
 
-exports.login = require('./login');
-exports.logout = require('./logout');
+exports.api = {
+  login: require('./login'),
+  logout: require('./logout')
+};

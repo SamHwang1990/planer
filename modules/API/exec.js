@@ -4,22 +4,31 @@
 
 'use strict';
 
-const PlanerError = require('../Error');
+const ApiExport = require('./export');
 
-module.exports.exec = function* exec(apiPath, parameters = {}, options = {}) {
-  if (typeof apiPath !== 'string') throw new PlanerError.InvalidParameterError('exec command failed: no api path');
+module.exports = function* exec(apiPath, parameters = {}, options = {}) {
+  if (typeof apiPath !== 'string') {
+    return ApiExport.export(ApiExport.CODE.FA_UNKNOWN, undefined, 'api path is empty');
+  }
 
   apiPath = apiPath.split('.');
 
   var modulePath = apiPath.slice(0, -1).join('/');
   var method = apiPath.slice(-1);
 
-  // todo: 接口调用需要：确定接口是否存在、接口是否在黑名单中（如果调整接口公开的机制，可能不会有黑名单的存在）
-
+  var module;
   var api;
+
   try {
-
+    module = require(`../${modulePath}`);
   } catch (e) {
-
+    return ApiExport.export(ApiExport.CODE.FA_INVALID_METHOD, undefined, `module ${modulePath} not exist`);
   }
+
+  api = module.api && module.api[method];
+  if (!api) {
+    return ApiExport.export(ApiExport.CODE.FA_INVALID_METHOD, undefined, `method ${apiPath.join('.')} not exist or is private`);
+  }
+
+  yield api(parameters, options);
 };
