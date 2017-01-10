@@ -29,3 +29,14 @@ login :
   pwd-encrypt-salt  :
       used: planer
       desc: 为保护用户密码安全,对密码进行不可逆加密,使用的salt
+
+log :
+  dist :
+    default: stdout
+    options: [file, stdout]
+    desc: 日志输出
+
+  level :
+    default: info
+    options: [trace, debug, info, warn, error, fatal]
+    desc: 日志级别
