@@ -4,10 +4,10 @@
 
 'use strict';
 
-const log4js = require('log4js');
+const bunyan = require('bunyan');
 const SystemConfig = require('../SystemConfig');
 
-const PlanerLoggerCategory = {
+const LoggerCategory = {
   STATIC: 'static',
   API_REQ: 'api_request',
   API_RES: 'api_response',
@@ -16,44 +16,17 @@ const PlanerLoggerCategory = {
   EXCEPTION: 'exception'
 };
 
-var appenderList = {
-  'stdout': {
-    type: 'stdout'
-  },
-  'file': {
-    type: 'file',
-    filename: 'logs/planer.log',
-    backups: 10
-  }
-};
+const loggerStream = SystemConfig.getString('programs/log/dist') === 'stdout'
+    ? process.stdout
+    : `../logs/planer.log`;
 
-var appender = Object.assign(
-    {},
-    SystemConfig.getString("programs/log/dist").toLowerCase() === 'file' ? appenderList.file : appenderList.stdout,
-    {category: '[all]'}
-);
+const loggerLevel = SystemConfig.getString('programs/log/level');
 
-log4js.configure({
-  appenders: [appender],
-  levels: {
-    '[all]': SystemConfig.getString('programs/log/level')
-  }
+exports.staticLogger = bunyan.createLogger({
+  name: LoggerCategory.STATIC,
+  stream: loggerStream,
+  level: loggerLevel
 });
-
-function baseLogCompiler(logMethod, meta) {
-  if (!logMethod) return log4js.getLogger(PlanerLoggerCategory.EXCEPTION).error('fail to stringify log data');
-
-  try {
-    let log = JSON.stringify(meta);
-    logMethod(log);
-  } catch (e) {
-    log4js.getLogger(PlanerLoggerCategory.EXCEPTION).warn('fail to stringify log data');
-  }
-}
-
-exports.staticLogger = function() {
-
-};
 
 exports.apiReqLogger = function() {};
 
