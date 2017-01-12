@@ -5,6 +5,7 @@
 'use strict';
 
 const bunyan = require('bunyan');
+const VError = require('verror');
 const SystemConfig = require('../SystemConfig');
 
 const LoggerCategory = {
@@ -22,18 +23,84 @@ const loggerStream = SystemConfig.getString('programs/log/dist') === 'stdout'
 
 const loggerLevel = SystemConfig.getString('programs/log/level');
 
-exports.staticLogger = bunyan.createLogger({
-  name: LoggerCategory.STATIC,
+const baseLoggerConfig = {
   stream: loggerStream,
   level: loggerLevel
-});
+};
 
-exports.apiReqLogger = function() {};
+const PlanerSerializers = {
+  req: function koaReqSerializer(req) {
+    if (!req || !req.socket) {
+      return req;
+    }
 
-exports.apiResLogger = function() {};
+    return {
+      method: req.method,
+      protocol: req.protocol,
+      query: req.query,
+      remoteAddress: req.ip,
+      remotePort: req.socket.remotePort || '',
+      jwt: req.ctx.cookies.get('planer.token')
+    }
+  },
+  res: function koaResSerializer(res) {
+    if (!res || !res.status) {
+      return res;
+    }
+
+    return {
+      statusCode: res.status,
+      statusMessage: res.message
+    }
+  },
+  apiModule: function PlanerApiModuleSerializer(apiPath) {
+    if (Array.isArray(apiPath)) {
+      apiPath = apiPath.join('.');
+    }
+    return apiPath;
+  },
+  apiResult: function PlanerApiResultSerializer({code, meta, msg}) {
+    return {
+      code,
+      meta,   // may need to substring
+      msg
+    }
+  }
+};
+
+exports.staticLogger = bunyan.createLogger(Object.assign({} , baseLoggerConfig, {
+  name: LoggerCategory.STATIC,
+  serializers: {
+    req: PlanerSerializers.req,
+    res: PlanerSerializers.res
+  }
+}));
+
+exports.apiReqLogger = bunyan.createLogger(Object.assign({} , baseLoggerConfig, {
+  name: LoggerCategory.API_REQ,
+  serializers: {
+    apiModule: PlanerSerializers.apiModule,
+    req: PlanerSerializers.req
+  }
+}));
+
+exports.apiResLogger = bunyan.createLogger(Object.assign({}, baseLoggerConfig, {
+  name: LoggerCategory.API_RES,
+  serializers: {
+    apiModule: PlanerSerializers.apiModule,
+    req: PlanerSerializers.req,
+    res: PlanerSerializers.res,
+    apiResult: PlanerSerializers.apiResult
+  }
+}));
 
 exports.dbMongodLogger = function() {};
 
 exports.dbRedisLogger = function() {};
 
-exports.exceptionLogger = function() {};
+exports.exceptionLogger = bunyan.createLogger(Object.assign({}, baseLoggerConfig, {
+  name: LoggerCategory.EXCEPTION,
+  serializers: {
+    err: bunyan.stdSerializers.err
+  }
+}));
