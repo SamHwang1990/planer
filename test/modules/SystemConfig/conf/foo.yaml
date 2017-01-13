@@ -1,0 +1,27 @@
+booleanWithDefaultTrue :
+  default: true
+
+booleanWithUsed :
+  used    : false
+  default : true
+
+stringWithDefault :
+  default: foo
+
+stringWithUsed :
+  used    : bar
+  default : foo
+
+intWithDefault :
+  default: 2
+
+intWithUsed :
+  used    : 3
+  default : 2
+
+simpleSection :
+  level :
+    used   : trace
+    default: info
+    options: [trace, debug, info, warn, error, fatal]
+    desc: 日志级别
