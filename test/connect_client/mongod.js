@@ -5,9 +5,17 @@
 'use strict';
 
 describe('connect', function() {
+  var connection;
+
+  after(() => {
+    connection && connection.disconnect();
+  });
+
   it('shall connect successfully by default config', function(done) {
     var MongodClient = require('../../connect_client/mongod');
-    MongodClient.connect().then(() => {
+
+    connection = MongodClient.connect();
+    connection.then(() => {
       done();
     }, (err) => {
       done(err);

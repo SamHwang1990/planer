@@ -4,8 +4,9 @@
 
 'use strict';
 
+const path = require('path');
+
 const bunyan = require('bunyan');
-const VError = require('verror');
 const SystemConfig = require('../SystemConfig');
 
 const LoggerCategory = {
@@ -18,13 +19,13 @@ const LoggerCategory = {
 };
 
 const loggerStream = SystemConfig.getString('programs/log/dist') === 'stdout'
-    ? process.stdout
-    : `../logs/planer.log`;
+    ? { type: 'stream', stream: process.stdout }
+    : { type: 'file', path: path.resolve(__dirname, '../../logs/planer.log') };
 
 const loggerLevel = SystemConfig.getString('programs/log/level');
 
 const baseLoggerConfig = {
-  stream: loggerStream,
+  streams: [loggerStream],
   level: loggerLevel
 };
 
@@ -100,6 +101,7 @@ exports.dbRedisLogger = function() {};
 
 exports.exceptionLogger = bunyan.createLogger(Object.assign({}, baseLoggerConfig, {
   name: LoggerCategory.EXCEPTION,
+  level: 'trace',
   serializers: {
     err: bunyan.stdSerializers.err
   }
