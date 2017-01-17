@@ -1,2 +1,4 @@
 --require ./test/commonRequire.js
 --recursive
+--timeout 0
+--ui bdd

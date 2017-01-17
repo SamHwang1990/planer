@@ -13,7 +13,7 @@ const LoggerCategory = {
   STATIC: 'static',
   API_REQ: 'api_request',
   API_RES: 'api_response',
-  DB_MONGOD: 'db_mongod',
+  DB_MONGO: 'db_mongo',
   DB_REDIS: 'db_redis',
   EXCEPTION: 'exception'
 };
@@ -95,7 +95,9 @@ exports.apiResLogger = bunyan.createLogger(Object.assign({}, baseLoggerConfig, {
   }
 }));
 
-exports.dbMongodLogger = function() {};
+exports.dbMongoLogger = bunyan.createLogger(Object.assign({}, baseLoggerConfig, {
+  name: LoggerCategory.DB_MONGO
+}));
 
 exports.dbRedisLogger = function() {};
 

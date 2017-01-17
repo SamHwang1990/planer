@@ -7,7 +7,11 @@
 const mongoose = require('mongoose');
 
 const SystemConfig = require('../modules/SystemConfig');
-const ExceptionLogger = require('../modules/Logger').exceptionLogger;
+const {
+    exceptionLogger: ExceptionLogger,
+    dbMongoLogger : MongoLogger
+} = require('../modules/Logger');
+
 const ProcessExitError = require('../modules/Error').ProcessExitError;
 
 const mongoConfig = SystemConfig.getSection('datasources/mongod');
@@ -20,19 +24,33 @@ exports.connect = function connect() {
   // port
   if (port) connectArgs.push(port);
 
+  let user = mongoConfig.user;
+  let pass = mongoConfig.pwd || mongoConfig.password;
+
+  if (pass != null) {
+    pass = pass.toString();
+  }
+
+  if (user == null || pass == null) {
+    MongoLogger.warn({
+      user: user,
+      pass: pass
+    }, 'try to connect mongo db without authentication, it is not safe enough and may cause commands execute failed! Make sure that this is expected behavior!')
+  }
+
   // options
   connectArgs.push({
     auth: true,
-    user: mongoConfig.user,
-    pass: mongoConfig.pwd + ''
+    user: user,
+    pass: pass
   });
 
   // callback
   connectArgs.push(function(err) {
     if (err) {
-      let processExitError = new ProcessExitError('process exit because of mongo connection failed', {
+      let processExitError = new ProcessExitError({
         cause: err
-      });
+      }, 'process exit because of mongo connection failed');
       ExceptionLogger.error(processExitError);
 
       // todo: maybe need to specify the meaning of exit codes
