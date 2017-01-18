@@ -11,7 +11,7 @@ describe('connect', function() {
     connection && connection.disconnect();
   });
 
-  it('shall connect successfully by default config', function(done) {
+  it('simply connect test', function(done) {
     var MongodClient = require('../../connect_client/mongod');
 
     connection = MongodClient.connect();

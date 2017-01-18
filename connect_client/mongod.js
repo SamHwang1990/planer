@@ -53,8 +53,7 @@ exports.connect = function connect() {
       }, 'process exit because of mongo connection failed');
       ExceptionLogger.error(processExitError);
 
-      // todo: maybe need to specify the meaning of exit codes
-      // process.exit(1);
+      process.exit(1);
     }
   });
 

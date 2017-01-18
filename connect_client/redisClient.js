@@ -8,8 +8,9 @@ const SystemConfig = require('../modules/SystemConfig');
 
 const dbConfig = SystemConfig.getSection('datasources/redis');
 
-exports.connect = function(/*options*/) {
+exports.connect = function() {
   return redis({
-    url: `redis://${dbConfig.user}:${dbConfig.pwd}@${dbConfig.host}:${dbConfig.port}`
+    host: dbConfig.host,
+    port: dbConfig.port
   });
 };

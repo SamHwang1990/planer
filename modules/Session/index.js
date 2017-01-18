@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 
 const SystemConfig = require('../SystemConfig');
 const PlanerError = require('../Error');
-const redisStore = require('../../connect_client/redisStore').connect();
+const redisStore = require('../../connect_client/redisClient').connect();
 
 let tokenCookieKey = 'planer.token';
 
