@@ -11,7 +11,7 @@ exports.query = function queryUserInfo({email}) {
   return new Promise((resolve, reject) => {
     if (email == null) return reject(new PlanerError.InvalidParameterError(`query userinfo failed: parameter can not be empty.`));
 
-    UserInfoModel.find({email: email}, (err, userInfo) => {
+    UserInfoModel.findOne({email: email}, (err, userInfo) => {
       if (err) return reject(err);
       resolve(userInfo);
     });
