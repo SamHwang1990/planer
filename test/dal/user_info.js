@@ -145,4 +145,20 @@ describe('UserInfo database access layer api testing', () => {
       oldInfo.nickname.should.be.equal('Turing');
     });
   });
+
+  describe('remove()', () => {
+    afterEach('empty planer collection', function* () {
+      yield UserInfoModel.remove({});
+    });
+
+    it('email field as key', function* () {
+      yield UserInfoDal.create({email: 'foo@bar.com'});
+
+      let failRemoveResult = yield UserInfoDal.remove({email: 'nonexisted@bar.com'});
+      failRemoveResult.n.should.be.equal(0);
+
+      let successRemoveResult = yield UserInfoDal.remove({email: 'foo@bar.com'});
+      successRemoveResult.n.should.be.equal(1);
+    })
+  });
 });

@@ -2,7 +2,7 @@
  * Created by sam on 16/12/27.
  */
 
-// todo: 下一步要抛下单元测试,过下接口
+"use strict";
 
 const UserInfoModel = require('../models').UserInfo;
 const PlanerError = require('../modules/Error');
@@ -57,13 +57,13 @@ exports.update = function updateUserInfo(userInfo) {
   });
 };
 
-exports.delete = function updateUserInfo({email}) {
+exports.remove = function removeUserInfo({email}) {
   return new Promise((resolve, reject) => {
-    if (email == null) return reject(new PlanerError.InvalidParameterError(`delete userinfo failed: parameter can not be empty.`));
+    if (email == null) return reject(new PlanerError.InvalidParameterError(`remove userinfo failed: email parameter can not be empty.`));
 
-    UserInfoModel.findOneAndUpdate({email: email}, { status: 'destroy' }, err => {
+    UserInfoModel.find().remove({email: email}, (err, {result}) => {
       if (err) return reject(err);
-      resolve(true);
-    });
+      resolve(result);
+    })
   });
 };
