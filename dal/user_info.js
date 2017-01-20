@@ -41,12 +41,16 @@ exports.update = function updateUserInfo(userInfo) {
     };
 
     // email and group_id field shouldn't update in this api
-    var updateMeta = Object.assign({}, userInfo, {
-      email: null,
-      group_id: null
-    });
+    var updateMeta = Object.assign({}, userInfo);
+    delete updateMeta.email;
+    delete updateMeta.group_id;
 
-    UserInfoModel.findOneAndUpdate(condition, updateMeta, (err, user) => {
+    var projection = {
+      '_id': 0,
+      group_id: 0
+    };
+
+    UserInfoModel.findOneAndUpdate(condition, updateMeta, { fields: projection }, (err, user) => {
       if (err) return reject(err);
       resolve(user);
     });

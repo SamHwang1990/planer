@@ -4,6 +4,7 @@
 
 'use strict';
 
+const Mongoose = require('mongoose');
 const UserInfoModel = require('../../models/user_info');
 const UserInfoDal = require('../../dal/user_info');
 
@@ -91,7 +92,7 @@ describe('UserInfo database access layer api testing', () => {
       yield UserInfoModel.remove({});
     });
 
-    it('default', function* () {
+    it('accept object param and the email field as condition', function* () {
       var foo = {
         email: 'foo@bar.com',
         nickname: 'Turing',
@@ -100,9 +101,48 @@ describe('UserInfo database access layer api testing', () => {
 
       yield UserInfoDal.create(foo);
 
-      let newFoo = yield UserInfoDal.update({nickname: 'sam', email: 'foo@bar.com'});
-      newFoo.email.should.be.equal('foo@bar.com');
-      newFoo.nickname.should.be.equal('Turing');
+      let existedUser = yield UserInfoDal.update({email: foo.email});
+      existedUser.nickname.should.be.equal(foo.nickname);
+
+      let unexistedUser = yield UserInfoDal.update({email: 'unexisted@bar.com'});
+      (unexistedUser == null).should.be.true;
+    });
+
+    it('email and group_id field will be ignored', function* () {
+      var foo = {
+        email: 'foo@bar.com',
+        nickname: 'Turing',
+        remark: 'hero'
+      };
+
+      yield UserInfoDal.create(foo);
+      yield UserInfoDal.update({
+        email: foo.email,
+        nickname: 'sam',
+        group_id: [new Mongoose.SchemaTypes.ObjectId()]
+      });
+      let current = yield UserInfoDal.query({email: foo.email});
+
+      current.group_id.length.should.be.equal(0);
+      current.nickname.should.be.equal('sam');
+    });
+
+    it('_id nor group_id field are excluded in return', function* () {
+      var foo = {
+        email: 'foo@bar.com',
+        nickname: 'Turing',
+        remark: 'hero'
+      };
+
+      yield UserInfoDal.create(foo);
+      let oldInfo = yield UserInfoDal.update({
+        email: foo.email,
+        nickname: 'sam'
+      });
+
+      (oldInfo.group_id == null).should.be.true;
+      (oldInfo.id == null).should.be.true;
+      oldInfo.nickname.should.be.equal('Turing');
     });
   });
 });
