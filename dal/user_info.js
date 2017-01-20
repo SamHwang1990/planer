@@ -34,10 +34,21 @@ exports.create = function createUserInfo(userInfo) {
 exports.update = function updateUserInfo(userInfo) {
   return new Promise((resolve, reject) => {
     if (userInfo == null) return reject(new PlanerError.InvalidParameterError(`update userinfo failed: parameter can not be empty.`));
+    if (userInfo.email == null) return reject(new PlanerError.InvalidParameterError(`update userinfo failed: email key can not be empty.`));
 
-    UserInfoModel.findOneAndUpdate({email: userInfo.email}, userInfo, err => {
+    var condition = {
+      email: userInfo.email
+    };
+
+    // email and group_id field shouldn't update in this api
+    var updateMeta = Object.assign({}, userInfo, {
+      email: null,
+      group_id: null
+    });
+
+    UserInfoModel.findOneAndUpdate(condition, updateMeta, (err, user) => {
       if (err) return reject(err);
-      resolve(userInfo.email);
+      resolve(user);
     });
   });
 };

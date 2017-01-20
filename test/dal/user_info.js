@@ -75,6 +75,34 @@ describe('UserInfo database access layer api testing', () => {
       queryResult = yield UserInfoDal.query({email: 'foo@bar.com'});
       (queryResult != null).should.be.true;
       queryResult.email.should.be.equal('foo@bar.com');
-    })
-  })
+    });
+
+    it('email key is required', function* () {
+      try {
+        yield UserInfoDal.query({});
+      } catch (e) {
+        e.message.should.be.equal('query userinfo failed: parameter can not be empty.');
+      }
+    });
+  });
+
+  describe('update()', () => {
+    afterEach('empty planer collection', function* () {
+      yield UserInfoModel.remove({});
+    });
+
+    it('default', function* () {
+      var foo = {
+        email: 'foo@bar.com',
+        nickname: 'Turing',
+        remark: 'hero'
+      };
+
+      yield UserInfoDal.create(foo);
+
+      let newFoo = yield UserInfoDal.update({nickname: 'sam', email: 'foo@bar.com'});
+      newFoo.email.should.be.equal('foo@bar.com');
+      newFoo.nickname.should.be.equal('Turing');
+    });
+  });
 });
