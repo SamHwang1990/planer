@@ -20,11 +20,15 @@ describe('UserInfo database access layer api testing', () => {
     yield MongoConnection.disconnect();
   });
 
-  describe('create()', () => {
-    afterEach('empty planer collection', function* () {
-      yield UserInfoModel.remove({});
-    });
+  beforeEach('empty user info collection', function* () {
+    yield UserInfoModel.remove({});
+  });
 
+  afterEach('empty user info collection', function* () {
+    yield UserInfoModel.remove({});
+  });
+
+  describe('create()', () => {
     it('only email field is required', function* () {
       var email = 'foo@bar.com';
       var newUser = yield UserInfoDal.create({
@@ -62,10 +66,6 @@ describe('UserInfo database access layer api testing', () => {
   });
 
   describe('query()', () => {
-    afterEach('empty planer collection', function* () {
-      yield UserInfoModel.remove({});
-    });
-
     it('email field as key', function* () {
       yield UserInfoDal.create({email: 'foo@bar.com'});
 
@@ -88,10 +88,6 @@ describe('UserInfo database access layer api testing', () => {
   });
 
   describe('update()', () => {
-    afterEach('empty planer collection', function* () {
-      yield UserInfoModel.remove({});
-    });
-
     it('accept object param and the email field as condition', function* () {
       var foo = {
         email: 'foo@bar.com',
@@ -147,10 +143,6 @@ describe('UserInfo database access layer api testing', () => {
   });
 
   describe('remove()', () => {
-    afterEach('empty planer collection', function* () {
-      yield UserInfoModel.remove({});
-    });
-
     it('email field as key', function* () {
       yield UserInfoDal.create({email: 'foo@bar.com'});
 

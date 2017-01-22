@@ -7,7 +7,7 @@
 const UserInfoModel = require('../models').UserInfo;
 const PlanerError = require('../modules/Error');
 
-exports.query = function queryUserInfo({email}) {
+exports.query = function queryUserInfo({email} = {}) {
   return new Promise((resolve, reject) => {
     if (email == null) return reject(new PlanerError.InvalidParameterError(`query userinfo failed: parameter can not be empty.`));
 
@@ -57,7 +57,7 @@ exports.update = function updateUserInfo(userInfo) {
   });
 };
 
-exports.remove = function removeUserInfo({email}) {
+exports.remove = function removeUserInfo({email} = {}) {
   return new Promise((resolve, reject) => {
     if (email == null) return reject(new PlanerError.InvalidParameterError(`remove userinfo failed: email parameter can not be empty.`));
 

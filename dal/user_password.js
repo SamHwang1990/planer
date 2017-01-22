@@ -16,7 +16,9 @@ function crypto_pbkdf2_thunk(password, salt) {
   }
 }
 
-exports.updatePassword = function* updateUserPassword({email, password}) {
+exports.crypto_pbkdf2_thunk = crypto_pbkdf2_thunk;
+
+exports.updatePassword = function* updateUserPassword({email, password} = {}) {
   if (email == null) throw new PlanerError.InvalidParameterError('update user password failed: email parameter can not be empty.');
   if (password == null) throw new PlanerError.InvalidParameterError('update user password failed: password parameter can not be empty.');
 
@@ -30,7 +32,7 @@ exports.updatePassword = function* updateUserPassword({email, password}) {
     return {
       password: hashPassword,
       salt: salt,
-      timeout: (Date.now()).getTime() + 366*24*60*60*1000
+      timeout: new Date().getTime() + 366*24*60*60*1000
     }
   }
 
@@ -83,7 +85,7 @@ exports.updatePassword = function* updateUserPassword({email, password}) {
   }
 };
 
-exports.checkPassword = function* checkUserPassword({email, password}) {
+exports.checkPassword = function* checkUserPassword({email, password} = {}) {
   if (email == null) throw new PlanerError.InvalidParameterError('check user password failed: email parameter can not be empty.');
   if (password == null) throw new PlanerError.InvalidParameterError('check user password failed: password parameter can not be empty.');
 

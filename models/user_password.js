@@ -14,9 +14,11 @@ const UserPasswordSchema = new Schema({
     type: String,
     require: true
   },
+  salt: {
+    type: String,
+    require: true
+  },
   history_password: [Schema.Types.Mixed]
-}, {
-  _id: false
 });
 
 module.exports = mongoose.model('UserPassword', UserPasswordSchema);
