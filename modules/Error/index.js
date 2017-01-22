@@ -4,6 +4,16 @@
 
 const VError = require('verror');
 
+exports.CODE = {
+  'FA_USER_NOT_FOUND': 'FA_USER_NOT_FOUND',
+
+  'FA_PASSWORD_EMPTY': 'FA_PASSWORD_EMPTY',
+
+  'FA_INVALID_PARAMETER': 'FA_INVALID_PARAMETER',
+
+  'FA_PASSWORD_REPEATED': 'FA_PASSWORD_REPEATED'
+};
+
 exports.BasicError = VError;
 exports.InvalidParameterError = class InvalidParameterError extends VError{
   constructor(...args) {
