@@ -1,14 +1,16 @@
 # 以下的配置是本地测试的配置,可更改
 
 mongod :
-  host  : 192.168.1.9
+  #host  : 192.168.1.9
+  host  : 192.168.249.172
   port  : 27017
   name  : planer  # 数据库名称
   user  : planer  # 数据库Owner
   pwd   : '123'
 
 redis :
-  host  : 192.168.1.9
+  #host  : 192.168.1.9
+  host  : 192.168.249.172
   port  : 6379
   #name  : planer
   #user  : planer
