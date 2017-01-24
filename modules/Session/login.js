@@ -13,6 +13,10 @@ const login_sid_key = 'login.tsid';
 const sid_prefix = 'login:';
 const login_nonce_key = 'login.nonce';
 
+exports.login_sid_key = login_sid_key;
+exports.login_nonce_key = login_nonce_key;
+exports.login_sid_prefix = sid_prefix;
+
 exports.verifySession = function* verifySession() {
   var loginTempSid = this.cookies.get(login_sid_key);
   var loginNonce = this.cookies.get(login_nonce_key);
@@ -33,7 +37,7 @@ exports.verifySession = function* verifySession() {
 
   let loginTempSidKey = sid_prefix + loginTempSid;
 
-  let isTempSidExisted = yield this.client.EXISTS(loginTempSidKey);
+  let isTempSidExisted = yield this.app.redisClient.client.EXISTS(loginTempSidKey);
   if (!isTempSidExisted) {
     return {
       errorCode: PlanerError.CODE.FA_INVALID_LOGIN_SESSION,
@@ -41,7 +45,7 @@ exports.verifySession = function* verifySession() {
     }
   }
 
-  let currentNonce = yield this.client.HGET(loginTempSidKey, 'nonce');
+  let currentNonce = yield this.app.redisClient.client.HGET(loginTempSidKey, 'nonce');
   if (currentNonce == null || currentNonce !== loginNonce) {
     return {
       errorCode: PlanerError.CODE.FA_INVALID_LOGIN_SESSION,
@@ -59,7 +63,7 @@ exports.verifySession = function* verifySession() {
 exports.cleanSession = function* cleanSession() {
   var loginTempSid = this.cookies.get(login_sid_key);
   if (loginTempSid) {
-    yield this.client.DEL(loginTempSid);
+    yield this.app.redisClient.client.DEL(loginTempSid);
   }
 
   this.cookies.set(login_sid_key, null);
@@ -71,14 +75,14 @@ exports.createSession = function* createSession() {
   var nonce = uid.sync(6);
   var tsidKey = sid_prefix + tsid;
 
-  yield this.client.HSET(tsidKey, 'nonce', nonce);
-  yield this.client.EXPIRE(tsidKey, 5 * 60);
+  yield this.app.redisClient.client.HSET(tsidKey, 'nonce', nonce);
+  yield this.app.redisClient.client.EXPIRE(tsidKey, 5 * 60);
 
   this.cookies.set(login_sid_key, tsid, {httpOnly: true});
   this.cookies.set(login_nonce_key, nonce, {httpOnly: true});
 
   return {
-    tsid: tsidKey,
+    tsid: tsid,
     nonce: nonce
   }
 };
@@ -87,7 +91,12 @@ exports.updateNonce = function* updateNonce() {
   var loginTempSid = this.cookies.get(login_sid_key);
   var nonce = uid.sync(6);
 
-  yield this.client.HSET(sid_prefix + loginTempSid, 'nonce', nonce);
+  yield this.app.redisClient.client.HSET(sid_prefix + loginTempSid, 'nonce', nonce);
 
   this.cookies.set(login_nonce_key, nonce, {httpOnly: true});
+
+  return {
+    tsid: loginTempSid,
+    nonce: nonce
+  }
 };
