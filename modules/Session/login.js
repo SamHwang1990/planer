@@ -10,7 +10,7 @@ const uid = require('uid-safe');
 const PlanerError = require('../Error');
 
 const login_sid_key = 'login.tsid';
-const sid_prefix = 'login:';
+const sid_prefix = 'login.sid:';
 const login_nonce_key = 'login.nonce';
 
 exports.login_sid_key = login_sid_key;

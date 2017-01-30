@@ -6,7 +6,6 @@
 
 const PlanerError = require('../../../modules/Error');
 const LoginSession = require('../../../modules/Session/login');
-const koa = require('koa');
 
 describe('Login temp session testing', function() {
   var RedisClient;
@@ -150,7 +149,7 @@ describe('Login temp session testing', function() {
       sidTTL.should.be.at.most(5*60);
     });
 
-    it('add new sid and nonce to cookies', function*() {
+    it('add new sid and nonce to cookies', function() {
       context.cookies.get(LoginSession.login_sid_key).should.be.equal(createResult.tsid);
       context.cookies.get(LoginSession.login_nonce_key).should.be.equal(createResult.nonce);
     });
@@ -175,7 +174,7 @@ describe('Login temp session testing', function() {
       (yield RedisClient.client.HGET(`${LoginSession.login_sid_prefix}${createResult.tsid}`, 'nonce')).should.be.equal(updateResult.nonce);
     });
 
-    it('new nonce has set in cookies', function*() {
+    it('new nonce has set in cookies', function() {
       context.cookies.get(LoginSession.login_sid_key).should.be.equal(createResult.tsid);
       context.cookies.get(LoginSession.login_nonce_key).should.be.equal(updateResult.nonce);
     })
