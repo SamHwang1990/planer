@@ -75,11 +75,13 @@ exports.createSession = function* createSession() {
   var nonce = uid.sync(6);
   var tsidKey = sid_prefix + tsid;
 
-  yield this.app.redisClient.client.HSET(tsidKey, 'nonce', nonce);
-  yield this.app.redisClient.client.EXPIRE(tsidKey, 5 * 60);
+  var loginSessionTimeout = 5 * 60;
 
-  this.cookies.set(login_sid_key, tsid, {httpOnly: true});
-  this.cookies.set(login_nonce_key, nonce, {httpOnly: true});
+  yield this.app.redisClient.client.HSET(tsidKey, 'nonce', nonce);
+  yield this.app.redisClient.client.EXPIRE(tsidKey, loginSessionTimeout);
+
+  this.cookies.set(login_sid_key, tsid, {httpOnly: true, maxAge: loginSessionTimeout});
+  this.cookies.set(login_nonce_key, nonce, {httpOnly: true, maxAge: loginSessionTimeout});
 
   return {
     tsid: tsid,

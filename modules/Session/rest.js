@@ -61,6 +61,8 @@ exports.cookieStore = tokenCookieStore;
 
 exports.createSession = function* createSession(context, userInfo) {
 
+  var sessionTimeout = ms(SystemConfig.getString('programs/JWT/timeout', '1d'));
+
   if (userInfo == null) {
     throw new PlanerError.InvalidParameterError('create rest session failed: userinfo parameter can not be empty.');
   }
@@ -69,11 +71,14 @@ exports.createSession = function* createSession(context, userInfo) {
   var jwtId = uid.sync(6);
 
   var token = yield signToken(sid, jwtId);
-  tokenCookieStore.set(context, token);
+  tokenCookieStore.set(context, token, {
+    httpOnly: true,
+    maxAge: sessionTimeout
+  });
 
   yield context.app.redisClient.client.HSET(`${sid_redis_prefix}${sid}`, 'jwtId', jwtId);
   yield context.app.redisClient.client.HSET(`${sid_redis_prefix}${sid}`, 'userInfo', JSON.stringify(userInfo));
-  yield context.app.redisClient.client.EXPIRE(`${sid_redis_prefix}${sid}`, ms(SystemConfig.getString('programs/JWT/timeout', '1d'))/1000);
+  yield context.app.redisClient.client.EXPIRE(`${sid_redis_prefix}${sid}`, sessionTimeout/1000);
 
   return {
     sid: sid,
