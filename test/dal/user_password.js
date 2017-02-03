@@ -114,7 +114,7 @@ describe('UserPassword database access layer api testing', () => {
   });
 
   describe('checkPassword()', () => {
-    it('throw when email param is empty', function* () {
+    it('throw when user_id param is empty', function* () {
       try {
         yield UserPasswordDal.checkPassword();
       } catch(e) {
@@ -124,17 +124,9 @@ describe('UserPassword database access layer api testing', () => {
 
     it('throw when password param is empty', function* () {
       try {
-        yield UserPasswordDal.checkPassword({email: 'foo@bar.com'});
+        yield UserPasswordDal.checkPassword({user_id: 'not real id'});
       } catch(e) {
         (e instanceof PlanerError.InvalidParameterError).should.be.true;
-      }
-    });
-
-    it('throw when user with specified email param is not existed', function* () {
-      try {
-        yield UserPasswordDal.checkPassword({email: 'foo@bar.com', password: '123'});
-      } catch(e) {
-        PlanerError.BasicError.info(e).code.should.be.equal(PlanerError.CODE.FA_USER_NOT_FOUND);
       }
     });
 
@@ -148,8 +140,10 @@ describe('UserPassword database access layer api testing', () => {
       yield UserInfoDal.create(foo);
       yield UserPasswordDal.updatePassword({email: foo.email, password: '123'});
 
-      (yield UserPasswordDal.checkPassword({email: foo.email, password: '123'})).should.be.true;
-      (yield UserPasswordDal.checkPassword({email: foo.email, password: '345'})).should.be.false;
+      let foo_id = (yield UserInfoDal.query({email: foo.email})).id;
+
+      (yield UserPasswordDal.checkPassword({user_id: foo_id, password: '123'})).should.be.true;
+      (yield UserPasswordDal.checkPassword({user_id: foo_id, password: '345'})).should.be.false;
 
     });
   })

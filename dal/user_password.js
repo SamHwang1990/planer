@@ -85,14 +85,11 @@ exports.updatePassword = function* updateUserPassword({email, password} = {}) {
   }
 };
 
-exports.checkPassword = function* checkUserPassword({email, password} = {}) {
-  if (email == null) throw new PlanerError.InvalidParameterError('check user password failed: email parameter can not be empty.');
+exports.checkPassword = function* checkUserPassword({user_id, password} = {}) {
+  if (user_id == null) throw new PlanerError.InvalidParameterError('check user password failed: user_id parameter can not be empty.');
   if (password == null) throw new PlanerError.InvalidParameterError('check user password failed: password parameter can not be empty.');
 
-  var userInfo = yield UserInfoDal.query({email});
-  if (userInfo == null) throw new PlanerError.BasicError({info: {code: PlanerError.CODE.FA_USER_NOT_FOUND}}, `check user password failed: user not found with ${email}`);
-
-  var userPassword = yield UserPasswordModel.findOne({user_id: userInfo.id});
+  var userPassword = yield UserPasswordModel.findOne({user_id: user_id});
   if (userPassword == null) throw new PlanerError.BasicError({info: {code: PlanerError.CODE.FA_PASSWORD_EMPTY}}, `check user password failed: user ${email} has no password yet.`);
 
   password = (yield crypto_pbkdf2_thunk(password, userPassword.salt)).toString('hex');
