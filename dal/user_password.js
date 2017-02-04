@@ -8,7 +8,7 @@ const crypto = require('crypto');
 
 const UserInfoDal = require('./user_info');
 const UserPasswordModel = require('../models').UserPassword;
-const PlanerError = require('../modules/Error');
+const PlanerError = require('../utils/error');
 
 function crypto_pbkdf2_thunk(password, salt) {
   return function(cb) {

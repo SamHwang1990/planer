@@ -4,7 +4,7 @@
 
 'use strict';
 
-const PlanerError = require('../../../modules/Error');
+const PlanerError = require('../../../utils/error');
 const LoginSession = require('../../../modules/Session/login');
 
 describe('Login temp session testing', function() {

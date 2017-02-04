@@ -8,10 +8,10 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
 
-const cacheable = require('../../utils/cacheable');
+const cacheable = require('./cacheable');
 
 const config = {};
-const planerHome = process.env.PLANER_HOME || path.resolve(__dirname, '../../');
+const planerHome = process.env.PLANER_HOME || path.resolve(__dirname, '../');
 
 function loadConfig() {
   var confDir = path.join(planerHome, './conf');

@@ -9,8 +9,8 @@ const uid = require('uid-safe');
 const ms = require('ms');
 const jwt = require('jsonwebtoken');
 
-const PlanerConfig = require('../../../modules/SystemConfig');
-const PlanerError = require('../../../modules/Error');
+const PlanerConfig = require('../../../utils/config');
+const PlanerError = require('../../../utils/error');
 const RestSession = require('../../../modules/Session/rest');
 
 describe('Restful api session testing', function() {

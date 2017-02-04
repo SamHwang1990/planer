@@ -7,7 +7,7 @@
 const path = require('path');
 
 const bunyan = require('bunyan');
-const SystemConfig = require('../SystemConfig');
+const SystemConfig = require('./config');
 
 const LoggerCategory = {
   STATIC: 'static',

@@ -2,8 +2,10 @@
  * Created by sam on 17/1/3.
  */
 
-const Dal = require('../../dal/index');
-const UserInfoDal = Dal.UserInfo;
+const {
+  UserInfo: UserInfoDal,
+  UserPassword: UserPasswordDal
+} = require('../../dal');
 
 exports.createUser = function createUser(userInfo) {
   return new Promise((resolve, reject) => {

@@ -8,7 +8,7 @@ const mock = require('mock-require');
 const process =require('process');
 const path = require('path');
 
-const SystemConfigModulePath = '../../../modules/SystemConfig/index';
+const SystemConfigModulePath = '../../../utils/config';
 
 function cleanSystemConfigCache() {
   delete require.cache[require.resolve(SystemConfigModulePath)];
@@ -78,7 +78,7 @@ describe('read config file from env or current dir', function() {
   });
 });
 
-describe('SystemConfig api test', function() {
+describe('config api test', function() {
   var oldHome;
   var SystemConfig;
 

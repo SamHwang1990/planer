@@ -4,7 +4,7 @@
 
 const redis = require('koa-redis');
 
-const SystemConfig = require('../modules/SystemConfig');
+const SystemConfig = require('../utils/config');
 
 const dbConfig = SystemConfig.getSection('datasources/redis');
 

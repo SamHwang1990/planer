@@ -9,8 +9,8 @@ const uuid = require('uuid');
 const jwt = require('jsonwebtoken');
 const ms = require('ms');
 
-const SystemConfig = require('../SystemConfig');
-const PlanerError = require('../Error');
+const SystemConfig = require('../../utils/config');
+const PlanerError = require('../../utils/error');
 
 const token_cookie_key = 'planer.token';
 const token_blacklist_redis_prefix = 'rest.token.blacklist:';

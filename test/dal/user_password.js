@@ -9,7 +9,7 @@ const UserInfoModel = require('../../models/user_info');
 const UserPasswordDal = require('../../dal/user_password');
 const UserInfoDal = require('../../dal/user_info');
 
-const PlanerError = require('../../modules/Error');
+const PlanerError = require('../../utils/error');
 
 describe('UserPassword database access layer api testing', () => {
   var MongoConnection;
