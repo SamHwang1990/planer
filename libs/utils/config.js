@@ -7,6 +7,7 @@
 const yaml = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
+const ms = require('ms');
 
 const cacheable = require('./cacheable');
 
@@ -73,14 +74,14 @@ function compareConfigPriority(configSection, customDefault) {
   return confValue;
 }
 
-exports.getBoolean = function getBoolean(path, defaultV) {
+function getBoolean(path, defaultV) {
   var section = getSectionBase(path);
 
   // 可能使用js-yaml 的schema 之后可以免去convert 的逻辑
   return _convertToBoolean(compareConfigPriority(section, defaultV));
-};
+}
 
-exports.getString = function getString(path, defaultV) {
+function getString(path, defaultV) {
   var section = getSectionBase(path);
   var confV = compareConfigPriority(section, defaultV);
 
@@ -94,15 +95,33 @@ exports.getString = function getString(path, defaultV) {
   }
 
   return confV || '';
-};
+}
 
-exports.getInt = function getInt(path, defaultV) {
+function getInt(path, defaultV) {
   var section = getSectionBase(path);
   var confV = compareConfigPriority(section, defaultV);
   return parseInt(confV, 10);
-};
+}
 
-exports.getSection = function getSection(path) {
+function getMilliseconds(path, defaultV) {
+  var value = getString(path, defaultV);
+  return ms(value);
+}
+
+function getSeconds(path, defaultV) {
+  return getMilliseconds(path, defaultV) / 1000;
+}
+
+function getSection(path) {
   return getSectionBase(path);
+}
+
+module.exports = {
+  getBoolean,
+  getString,
+  getInt,
+  getMilliseconds,
+  getSeconds,
+  getSection
 };
 

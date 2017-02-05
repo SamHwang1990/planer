@@ -9,9 +9,9 @@ const uid = require('uid-safe');
 const ms = require('ms');
 const jwt = require('jsonwebtoken');
 
-const PlanerConfig = require('../../../utils/config');
-const PlanerError = require('../../../utils/error');
-const RestSession = require('../../../modules/Session/rest');
+const PlanerConfig = require('../.././config');
+const PlanerError = require('../.././error');
+const RestSession = require('../.././Session/rest');
 
 describe('Restful api session testing', function() {
   var RedisClient;
@@ -62,7 +62,7 @@ describe('Restful api session testing', function() {
   }
 
   before('connect to redis', function* () {
-    RedisClient = require('../../../connect_client/redisClient').connect();
+    RedisClient = require('../.././redisClient').connect();
     yield new Promise((resolve, reject) => {
       RedisClient.on('error', err => {
         reject(err);

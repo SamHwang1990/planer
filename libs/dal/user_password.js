@@ -8,7 +8,7 @@ const crypto = require('crypto');
 
 const UserInfoDal = require('./user_info');
 const UserPasswordModel = require('../models').UserPassword;
-const PlanerError = require('../utils/error');
+const PlanerError = require('./error');
 
 function crypto_pbkdf2_thunk(password, salt) {
   return function(cb) {
@@ -36,12 +36,21 @@ exports.updatePassword = function* updateUserPassword({email, password} = {}) {
     }
   }
 
-  var userPassword = yield UserPasswordModel.findOne({user_id: userInfo.id});
+  function passwordInfoProjection(passwordInfo) {
+    delete passwordInfo._id;
+    delete passwordInfo.id;
+    delete passwordInfo.salt;
+    delete passwordInfo.password;
+    delete passwordInfo.history_password;
+    return passwordInfo;
+  }
+
+  var userPassword = yield UserPasswordModel.findOne({user_email: email});
 
   if (userPassword == null) {
     let newPasswordInfo = yield newPasswordHistory(password);
     userPassword = yield UserPasswordModel.create({
-      user_id: userInfo.id,
+      user_email: email,
       password: newPasswordInfo.password,
       salt: newPasswordInfo.salt,
       history_password: [newPasswordInfo]
@@ -49,7 +58,7 @@ exports.updatePassword = function* updateUserPassword({email, password} = {}) {
 
     return {
       action: 'create',
-      userPassword: userPassword
+      userPassword: passwordInfoProjection(userPassword)
     }
   }
 
@@ -81,19 +90,30 @@ exports.updatePassword = function* updateUserPassword({email, password} = {}) {
   let updateResult = yield userPassword.save();
   return {
     action: 'update',
-    userPassword: userPassword
+    userPassword: passwordInfoProjection(userPassword)
   }
 };
 
-exports.checkPassword = function* checkUserPassword({user_id, password} = {}) {
-  if (user_id == null) throw new PlanerError.InvalidParameterError('check user password failed: user_id parameter can not be empty.');
+exports.checkPassword = function* checkUserPassword({user_email, password} = {}) {
+  if (user_email == null) throw new PlanerError.InvalidParameterError('check user password failed: user_id parameter can not be empty.');
   if (password == null) throw new PlanerError.InvalidParameterError('check user password failed: password parameter can not be empty.');
 
-  var userPassword = yield UserPasswordModel.findOne({user_id: user_id});
+  var userPassword = yield UserPasswordModel.findOne({user_email});
   if (userPassword == null) throw new PlanerError.BasicError({info: {code: PlanerError.CODE.FA_PASSWORD_EMPTY}}, `check user password failed: user ${email} has no password yet.`);
 
   password = (yield crypto_pbkdf2_thunk(password, userPassword.salt)).toString('hex');
 
   return password === userPassword.password;
+};
+
+exports.cleanPassword = function destroyUserPassword({ email } = {}) {
+  return new Promise((resolve, reject) => {
+    if (email == null) throw new PlanerError.InvalidParameterError('clean user password failed: email parameter can not be empty.');
+
+    UserPasswordModel.remove({user_email: email}, (err, {result}) => {
+      if (err) return reject(err);
+      resolve(result);
+    })
+  });
 };
 

@@ -9,8 +9,8 @@ const uuid = require('uuid');
 const jwt = require('jsonwebtoken');
 const ms = require('ms');
 
-const SystemConfig = require('../../utils/config');
-const PlanerError = require('../../utils/error');
+const SystemConfig = require('.././config');
+const PlanerError = require('.././error');
 
 const token_cookie_key = 'planer.token';
 const token_blacklist_redis_prefix = 'rest.token.blacklist:';
@@ -34,7 +34,7 @@ function* signToken(sid, jwtId) {
   var secret = SystemConfig.getString('programs/JWT/sign-secret', 'planer');
   if (!secret || secret.toLowerCase() === 'planer') {
     if (process.NODE_ENV === 'development') {
-      console.log('not secret or secret too simple');
+      // console.log('not secret or secret too simple');
     }
   }
 

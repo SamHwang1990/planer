@@ -6,9 +6,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserPasswordSchema = new Schema({
-  user_id: {
-    type: Schema.Types.ObjectId,
-    require: true
+  user_email: {
+    type: String,
+    require: true,
+    index: {
+      unique: true
+    }
   },
   password: {
     type: String,

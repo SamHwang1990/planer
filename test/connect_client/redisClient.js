@@ -14,7 +14,7 @@ describe('redis connect', () => {
   });
 
   it('shall connect and ready with default config', done => {
-    redisStore = require('../../connect_client/redisClient').connect();
+    redisStore = require('.././redisClient').connect();
     redisStore.on('error', err => {
       done(err);
     });

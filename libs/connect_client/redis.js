@@ -4,9 +4,9 @@
 
 const redis = require('koa-redis');
 
-const SystemConfig = require('../utils/config');
+const PlanerConfig = require('./config');
 
-const dbConfig = SystemConfig.getSection('datasources/redis');
+const dbConfig = PlanerConfig.getSection('datasources/redis');
 
 exports.connect = function() {
   return redis({

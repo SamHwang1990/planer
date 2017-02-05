@@ -7,7 +7,7 @@
 const RestSession = require('../Session/rest');
 const LoginSession = require('../Session/login');
 const PlanerError = require('../Error');
-const APIBase = require('../API');
+const APIBase = require('../API/index');
 const {
     UserInfo: UserInfoDal,
     UserPassword: UserPasswordDal
@@ -20,7 +20,7 @@ exports.login = function*({email, password} = {}) {
   var userInfo = yield UserInfoDal.query({email});
   if (userInfo == null) throw new PlanerError.BasicError({info: {code: PlanerError.CODE.FA_USER_NOT_FOUND}}, `login failed: user not found with ${email}`);
 
-  var isPasswordMatch = yield UserPasswordDal.checkPassword({user_id: userInfo.id, password});
+  var isPasswordMatch = yield UserPasswordDal.checkPassword({user_email: email, password});
   if (!isPasswordMatch) throw new PlanerError.AuthorizationError('login failed: password incorrect');
 
   yield LoginSession.cleanSession();

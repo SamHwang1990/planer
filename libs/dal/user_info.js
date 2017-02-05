@@ -5,7 +5,7 @@
 "use strict";
 
 const UserInfoModel = require('../models').UserInfo;
-const PlanerError = require('../utils/error');
+const PlanerError = require('./error');
 
 exports.query = function queryUserInfo({email} = {}) {
   return new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ exports.remove = function removeUserInfo({email} = {}) {
   return new Promise((resolve, reject) => {
     if (email == null) return reject(new PlanerError.InvalidParameterError(`remove userinfo failed: email parameter can not be empty.`));
 
-    UserInfoModel.find().remove({email: email}, (err, {result}) => {
+    UserInfoModel.remove({email: email}, (err, {result}) => {
       if (err) return reject(err);
       resolve(result);
     })

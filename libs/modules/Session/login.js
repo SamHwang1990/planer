@@ -7,7 +7,7 @@
 'use strict';
 
 const uid = require('uid-safe');
-const PlanerError = require('../../utils/error');
+const PlanerError = require('.././error');
 
 const login_sid_key = 'login.tsid';
 const sid_prefix = 'login.sid:';

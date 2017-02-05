@@ -6,13 +6,13 @@
 
 const mongoose = require('mongoose');
 
-const SystemConfig = require('../utils/config');
+const SystemConfig = require('./config');
 const {
     exceptionLogger: ExceptionLogger,
     dbMongoLogger : MongoLogger
-} = require('../utils/logger');
+} = require('./logger');
 
-const ProcessExitError = require('../utils/error').ProcessExitError;
+const ProcessExitError = require('./error').ProcessExitError;
 
 const mongoConfig = SystemConfig.getSection('datasources/mongod');
 

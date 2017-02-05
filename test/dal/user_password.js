@@ -4,18 +4,18 @@
 
 'use strict';
 
-const UserPasswordModel = require('../../models/user_password');
-const UserInfoModel = require('../../models/user_info');
-const UserPasswordDal = require('../../dal/user_password');
-const UserInfoDal = require('../../dal/user_info');
+const UserPasswordModel = require('.././user_password');
+const UserInfoModel = require('.././user_info');
+const UserPasswordDal = require('.././user_password');
+const UserInfoDal = require('.././user_info');
 
-const PlanerError = require('../../utils/error');
+const PlanerError = require('.././error');
 
 describe('UserPassword database access layer api testing', () => {
   var MongoConnection;
 
   before('create mongo connection', function* () {
-    MongoConnection = require('../../connect_client/mongod').connect();
+    MongoConnection = require('.././mongod').connect();
     yield MongoConnection;
   });
 

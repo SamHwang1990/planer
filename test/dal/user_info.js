@@ -5,14 +5,14 @@
 'use strict';
 
 const Mongoose = require('mongoose');
-const UserInfoModel = require('../../models/user_info');
-const UserInfoDal = require('../../dal/user_info');
+const UserInfoModel = require('.././user_info');
+const UserInfoDal = require('.././user_info');
 
 describe('UserInfo database access layer api testing', () => {
   var MongoConnection;
 
   before('create mongo connection', function* () {
-    MongoConnection = require('../../connect_client/mongod').connect();
+    MongoConnection = require('.././mongod').connect();
     yield MongoConnection;
   });
 
@@ -151,6 +151,8 @@ describe('UserInfo database access layer api testing', () => {
 
       let successRemoveResult = yield UserInfoDal.remove({email: 'foo@bar.com'});
       successRemoveResult.n.should.be.equal(1);
+
+      ((yield UserInfoDal.query({email: 'foo@bar.com'})) == null).should.be.true;
     })
   });
 });

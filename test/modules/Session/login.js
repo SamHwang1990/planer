@@ -4,8 +4,8 @@
 
 'use strict';
 
-const PlanerError = require('../../../utils/error');
-const LoginSession = require('../../../modules/Session/login');
+const PlanerError = require('../.././error');
+const LoginSession = require('../.././Session/login');
 
 describe('Login temp session testing', function() {
   var RedisClient;
@@ -37,7 +37,7 @@ describe('Login temp session testing', function() {
   }
 
   before('connect to redis', function* () {
-    RedisClient = require('../../../connect_client/redisClient').connect();
+    RedisClient = require('../.././redisClient').connect();
     yield new Promise((resolve, reject) => {
       RedisClient.on('error', err => {
         reject(err);

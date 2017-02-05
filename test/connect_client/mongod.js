@@ -12,7 +12,7 @@ describe('connect', function() {
   });
 
   it('simply connect test', function(done) {
-    var MongodClient = require('../../connect_client/mongod');
+    var MongodClient = require('.././mongod');
 
     connection = MongodClient.connect();
     connection.then(() => {
