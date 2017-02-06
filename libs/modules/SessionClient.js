@@ -18,23 +18,37 @@ const redis_key_prefix = {
 };
 
 class SessionClient {
-  constructor(context, sid, redisClient, sid_key_prefix = redis_key_prefix.rest_user) {
-    this.context = context;
+  constructor(planerContext, sid, redisClient, sid_key_prefix = redis_key_prefix.rest_user) {
+    this.planerContext = planerContext;
     this.redisClient = redisClient;
     this.sid = sid;
     this.key = `${sid_key_prefix}${sid}`;
+    this._deleted = false;
   }
 
   *getAttr (field) {
+    if (this._deleted) {
+      throw new PlanerError.BasicError(
+          { info: { code: PlanerError.CODE.FA_INVALID_SESSION } },
+          'get session attribute failed: session was deleted.'
+      )
+    }
     return (yield this.redisClient.HGET(this.key, field, field));
   }
 
   *setAttr (field, value) {
+    if (this._deleted) {
+      throw new PlanerError.BasicError(
+          { info: { code: PlanerError.CODE.FA_INVALID_SESSION } },
+          'set session attribute failed: session was deleted.'
+      )
+    }
     yield this.redisClient.HSET(this.key, field, value);
   }
 
   *destroySession() {
     yield this.redisClient.DEL(this.key);
+    this._deleted = true;
   }
 
   *isAlived() {
@@ -43,7 +57,16 @@ class SessionClient {
 
   *setTTL(expired) {
     this.ttl = expired;
-    yield this.redisClient.EXPIRE(this.key, expired);
+
+    var expireResult = yield this.redisClient.EXPIRE(this.key, expired);
+
+    if (expireResult !== 1) {
+      throw new PlanerError.BasicError({
+        info: {
+          code: PlanerError.CODE.FA_INVALID_SESSION
+        }
+      }, 'refresh session failed when session is not existed.');
+    }
   }
 
   *refreshTTL() {
@@ -56,7 +79,7 @@ class SessionClient {
     yield this.redisClient.TTL(this.key);
   }
 
-  static *newRestSession(context, redisClient, userInfo = {}) {
+  static *newRestSession(planerContext, redisClient, userInfo = {}) {
     var sessionTTL = PlanerConfig.getSeconds('programs/JWT/timeout', '1d');
 
     if (!userInfo.hasOwnProperty('email')) {
@@ -64,46 +87,47 @@ class SessionClient {
     }
 
     var sid = uuid.v4();
-    var restSession = new SessionClient(context, sid, redisClient);
+    var restSession = new SessionClient(planerContext, sid, redisClient);
 
-    yield restSession.setAttr('userInfo', JSON.stringify(userInfo));
+    yield restSession.setAttr('user_id', userInfo.id);
+    yield restSession.setAttr('user_email', userInfo.email);
     yield restSession.setTTL(sessionTTL);
     return restSession;
   }
 
-  static restoreRestSession(context, sid, redisClient) {
-    return new SessionClient(context, sid, redisClient);
+  static restoreRestSession(planerContext, sid, redisClient) {
+    return new SessionClient(planerContext, sid, redisClient);
   }
 
-  static *newLoginSession(context, redisClient) {
+  static *newLoginSession(planerContext, redisClient) {
     var sessionTTL = 5 * 60;
     var tsid = uuid.v4();
     var nonce = uid.sync(6);
 
-    var loginSession = new SessionClient(context, tsid, redisClient, redis_key_prefix.login);
+    var loginSession = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
 
     yield loginSession.setAttr('nonce', nonce);
     yield loginSession.setTTL(sessionTTL);
     return loginSession;
   }
 
-  static restoreLoginSession(context, tsid, redisClient) {
-    return new SessionClient(context, tsid, redisClient, redis_key_prefix.login);
+  static restoreLoginSession(planerContext, tsid, redisClient) {
+    return new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
   }
 
-  static *newTempSession(context, redisClient) {
+  static *newTempSession(planerContext, redisClient) {
     var sessionTTL = 5 * 60;
     var tsid = uuid.v4();
 
-    var loginSession = new SessionClient(context, tsid, redisClient, redis_key_prefix.temp);
+    var loginSession = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.temp);
 
     yield loginSession.setAttr('.keep', 0);
     yield loginSession.setTTL(sessionTTL);
     return loginSession;
   }
 
-  static restoreTempSession(context, tsid, redisClient) {
-    return new SessionClient(context, tsid, redisClient, redis_key_prefix.temp);
+  static restoreTempSession(planerContext, tsid, redisClient) {
+    return new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.temp);
   }
 }
 

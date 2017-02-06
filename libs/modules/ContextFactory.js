@@ -6,6 +6,11 @@
 
 const SessionClient = require('./SessionClient');
 const ApplicationFactory = require('./ApplicationFactory');
+const PlanerError = require('../utils/error');
+
+const JsonWebTokenHelpers = require('./JsonWebToken');
+
+const UserInfoDal = require('../dal/user_info');
 
 class PlanerContext {
   constructor(koaContext) {
@@ -19,12 +24,56 @@ class PlanerContext {
   }
 
   *getSessionClient() {
-    if (!this.session || !(this.session instanceof SessionClient)) {
-      // todo: context.sid 可以不存在,取而代之的是在这里进行jwt 和session 鉴权
-      this.session = yield SessionClient.restoreRestSession(this.context, this.context.sid, (yield this.getRedisClient()));
+    if (!this._session || !(this._session instanceof SessionClient)) {
+      let verifyResult = yield this.verifyAuthenticationToken();
+      this._session = yield SessionClient.restoreRestSession(this, verifyResult.sid, (yield this.getRedisClient()));
     }
 
-    return this.session;
+    return this._session;
+  }
+
+  *setSessionClient(sessionClient) {
+    if (sessionClient instanceof SessionClient) {
+      this._session = sessionClient;
+    }
+  }
+
+  *getUser() {
+    if (!this._user) {
+      let session = yield this.getSessionClient();
+      let user_email = yield session.getAttr('user_email');
+      this._user = yield UserInfoDal.query({email: user_email});
+    }
+    return this._user;
+  }
+
+  setUser(userInfo = {}) {
+    if (userInfo.hasOwnProperty('email')) {
+      this._user = userInfo;
+    }
+  }
+
+  *verifyAuthenticationToken() {
+    var verifyResult = yield JsonWebTokenHelpers.verifyToken(this);
+    if (verifyResult.errorCode != null) {
+      throw new PlanerError.AuthorizationError(
+          { info: { code: verifyResult.errorCode }},
+          verifyResult.errorMsg || ''
+      );
+    }
+    return verifyResult;
+  }
+
+  *createAuthenticationToken() {
+    return (yield JsonWebTokenHelpers.createToken(this));
+  }
+
+  *cleanAuthenticationToken() {
+    return (yield JsonWebTokenHelpers.cleanToken(this));
+  }
+
+  *refreshAuthenticationToken() {
+    return (yield JsonWebTokenHelpers.refreshToken(this));
   }
 
   static getInstance(koaContext) {

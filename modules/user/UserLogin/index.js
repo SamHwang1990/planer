@@ -4,15 +4,16 @@
 
 'use strict';
 
+const RestSession = require('../Session/rest');
+const LoginSession = require('../Session/login');
 const PlanerError = require('../Error');
+const APIBase = require('../API/index');
 const {
     UserInfo: UserInfoDal,
     UserPassword: UserPasswordDal
 } = require('../../dal');
 
-const SessionClient = require('../SessionClient');
-
-function *login(planerContext, {email, password} = {}) {
+exports.login = function*({email, password} = {}) {
   if (!email) throw new PlanerError.InvalidParameterError('login failed: email can not be empty');
   if (!password) throw new PlanerError.InvalidParameterError('login failed: password can not be empty');
 
@@ -22,22 +23,12 @@ function *login(planerContext, {email, password} = {}) {
   var isPasswordMatch = yield UserPasswordDal.checkPassword({user_email: email, password});
   if (!isPasswordMatch) throw new PlanerError.AuthorizationError('login failed: password incorrect');
 
-  var session = SessionClient.newRestSession(planerContext, (yield planerContext.getRedisClient()), userInfo);
+  yield LoginSession.cleanSession();
+  yield RestSession.createSession(this, userInfo);
+  return APIBase.exportResult(APIBase.exportCode.S_OK);
+};
 
-  planerContext.setSessionClient(session);
-  planerContext.setUser(userInfo);
-
-  return session;
-}
-
-function *logout(planerContext) {
-  var session = yield planerContext.getSessionClient();
-  if (session) {
-    yield session.destroySession();
-  }
-}
-
-module.exports = {
-  login,
-  logout
+exports.logout = function*() {
+  yield RestSession.destroySession(this);
+  return APIBase.exportResult(APIBase.exportCode.S_OK);
 };
