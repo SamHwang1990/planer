@@ -11,26 +11,28 @@ const uid = require('uid-safe');
 const PlanerError = require('../../utils/error');
 const SessionClient = require('../SessionClient');
 
-const login_sid_key = 'login.tsid';
+const login_token_key = 'login.tsid';
+const sidLength = 6;
+const nonceLength = 6;
 
 const tokenCookieStore = {
   get: function(koaContext) {
-    return koaContext.cookies.get(login_sid_key, {/*options*/});
+    return koaContext.cookies.get(login_token_key, {/*options*/});
   },
 
   set: function(koaContext, token, cookieOption = {httpOnly: true}) {
-    koaContext.cookies.set(login_sid_key, token, cookieOption);
+    koaContext.cookies.set(login_token_key, token, cookieOption);
   },
 
   reset: function(koaContext) {
-    koaContext.cookies.set(login_sid_key, null);
+    koaContext.cookies.set(login_token_key, null);
   }
 };
 
 function decodeCookieValue(value) {
   value = new Buffer(value, 'base64').toString('ascii');
-  let sid = value.slice(0, 6);
-  let nonce = value.slice(6, 12);
+  let sid = value.substr(0, sidLength);
+  let nonce = value.slice(-1, nonceLength);
 
   return {
     sid,
@@ -41,6 +43,14 @@ function decodeCookieValue(value) {
 function encodeCookieValue(sid, nonce) {
   var value = sid + nonce;
   return new Buffer(value).toString('base64');
+}
+
+function newTokenSid() {
+  return uid.sync(sidLength);
+}
+
+function newTokenNonce() {
+  return uid.sync(nonceLength);
 }
 
 function* verifyToken(planerContext) {
@@ -111,7 +121,7 @@ function* upsertToken(planerContext) {
     let session = SessionClient.restoreLoginSession(planerContext, sid, (yield planerContext.getRedisClient()));
 
     if (yield session.isAlived()) {
-      let nonce = uid.sync(6);
+      let nonce = newTokenNonce();
 
       tokenCookieStore.set(planerContext.context, encodeCookieValue(sid, nonce));
 
@@ -139,12 +149,15 @@ function* upsertToken(planerContext) {
 }
 
 module.exports = {
-  login_token_key: login_sid_key,
+  login_token_key,
 
   tokenCookieStore,
 
   decodeCookieValue,
   encodeCookieValue,
+
+  newTokenSid,
+  newTokenNonce,
 
   verifyToken,
   cleanToken,

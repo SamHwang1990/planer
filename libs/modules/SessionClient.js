@@ -7,6 +7,8 @@
 const PlanerConfig = require('../utils/config');
 const PlanerError = require('../utils/error');
 
+const loginUniqueToken = require('./TokenHelpers/loginUniqueToken');
+
 const uuid = require('uuid');
 const uid = require('uid-safe');
 
@@ -56,7 +58,7 @@ class SessionClient {
   }
 
   *setTTL(expired) {
-    this.ttl = expired;
+    this._ttl = expired;
 
     var expireResult = yield this.redisClient.EXPIRE(this.key, expired);
 
@@ -70,7 +72,7 @@ class SessionClient {
   }
 
   *refreshTTL() {
-    if (this.ttl) {
+    if (this._ttl) {
       yield this.setTTL(this.ttl);
     }
   }
@@ -80,60 +82,73 @@ class SessionClient {
   }
 
   static *newRestSession(planerContext, redisClient, userInfo = {}) {
-    var sessionTTL = PlanerConfig.getSeconds('programs/JWT/timeout', '1d');
-
     if (!userInfo.hasOwnProperty('email')) {
       throw new PlanerError.InvalidParameterError('create rest session failed: user email can not be empty.');
     }
 
     var sid = uuid.v4();
-    var restSession = new SessionClient(planerContext, sid, redisClient);
+    var restSession = new RestSession(planerContext, sid, redisClient);
 
     yield restSession.setAttr('user_id', userInfo.id);
     yield restSession.setAttr('user_email', userInfo.email);
-    yield restSession.setTTL(sessionTTL);
+    yield restSession.refreshTTL();
+
     return restSession;
   }
 
   static restoreRestSession(planerContext, sid, redisClient) {
-    var session = new SessionClient(planerContext, sid, redisClient);
-    session.ttl = PlanerConfig.getSeconds('programs/JWT/timeout', '1d');
-    return session;
+    return new RestSession(planerContext, sid, redisClient);
   }
 
   static *newLoginSession(planerContext, redisClient) {
-    var sessionTTL = 5 * 60;
-    var tsid = uid.sync(6);
-    var nonce = uid.sync(6);
+    var tsid = loginUniqueToken.newTokenSid();
+    var nonce = loginUniqueToken.newTokenNonce();
 
-    var loginSession = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
+    var loginSession = new LoginUniqueSession(planerContext, tsid, redisClient);
 
     yield loginSession.setAttr('nonce', nonce);
-    yield loginSession.setTTL(sessionTTL);
+    yield loginSession.refreshTTL();
+
     return loginSession;
   }
 
   static restoreLoginSession(planerContext, tsid, redisClient) {
-    var session = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
-    session.ttl = 5 * 60;
-    return session;
+    return new LoginUniqueSession(planerContext, tsid, redisClient);
   }
 
   static *newTempSession(planerContext, redisClient) {
-    var sessionTTL = 5 * 60;
     var tsid = uuid.v4();
 
-    var loginSession = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.temp);
+    var loginSession = new TempSession(planerContext, tsid, redisClient);
 
     yield loginSession.setAttr('.keep', 0);
-    yield loginSession.setTTL(sessionTTL);
+    yield loginSession.refreshTTL();
     return loginSession;
   }
 
   static restoreTempSession(planerContext, tsid, redisClient) {
-    var session = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.temp);
-    session.ttl = 5 * 60;
-    return session;
+    return new TempSession(planerContext, tsid, redisClient);
+  }
+}
+
+class RestSession extends SessionClient {
+  constructor(...args) {
+    super(...args, redis_key_prefix.login);
+    this._ttl = PlanerConfig.getSeconds('programs/JWT/timeout', '1d');
+  }
+}
+
+class LoginUniqueSession extends SessionClient {
+  constructor(...args) {
+    super(...args, redis_key_prefix.login);
+    this._ttl = 2 * 60;
+  }
+}
+
+class TempSession extends SessionClient {
+  constructor(...args) {
+    super(...args, redis_key_prefix.temp);
+    this._ttl = 5 * 60;
   }
 }
 
