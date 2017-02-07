@@ -4,7 +4,6 @@
 
 'use strict';
 
-const uuid = require('uuid');
 const uid = require('uid-safe');
 const jwt = require('jsonwebtoken');
 
@@ -138,7 +137,7 @@ function* verifyToken(planerContext) {
 
 // invoke after new rest session
 function* createToken(planerContext) {
-  var session = yield planerContext.getSessionClient();
+  var session = yield planerContext.getRestSession();
   var user = yield planerContext.getUser();
 
   var sessionTimeout = PlanerConfig.getMilliseconds('programs/JWT/timeout', '1d');
@@ -158,12 +157,12 @@ function* createToken(planerContext) {
   }
 }
 
-function* cleanToken(planerContext) {
+function cleanToken(planerContext) {
   tokenCookieStore.reset(planerContext.context);
 }
 
 function* refreshToken(planerContext) {
-  var session = yield planerContext.getSessionClient();
+  var session = yield planerContext.getRestSession();
   var redisClient = yield planerContext.getRedisClient();
   var sid = session.sid;
   var currentJti = yield session.getAttr('jwtId');

@@ -24,14 +24,14 @@ function *login(planerContext, {email, password} = {}) {
 
   var session = SessionClient.newRestSession(planerContext, (yield planerContext.getRedisClient()), userInfo);
 
-  planerContext.setSessionClient(session);
+  planerContext.setRestSession(session);
   planerContext.setUser(userInfo);
 
   return session;
 }
 
 function *logout(planerContext) {
-  var session = yield planerContext.getSessionClient();
+  var session = yield planerContext.getRestSession();
   if (session) {
     yield session.destroySession();
   }

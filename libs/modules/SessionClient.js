@@ -96,12 +96,14 @@ class SessionClient {
   }
 
   static restoreRestSession(planerContext, sid, redisClient) {
-    return new SessionClient(planerContext, sid, redisClient);
+    var session = new SessionClient(planerContext, sid, redisClient);
+    session.ttl = PlanerConfig.getSeconds('programs/JWT/timeout', '1d');
+    return session;
   }
 
   static *newLoginSession(planerContext, redisClient) {
     var sessionTTL = 5 * 60;
-    var tsid = uuid.v4();
+    var tsid = uid.sync(6);
     var nonce = uid.sync(6);
 
     var loginSession = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
@@ -112,7 +114,9 @@ class SessionClient {
   }
 
   static restoreLoginSession(planerContext, tsid, redisClient) {
-    return new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
+    var session = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.login);
+    session.ttl = 5 * 60;
+    return session;
   }
 
   static *newTempSession(planerContext, redisClient) {
@@ -127,7 +131,9 @@ class SessionClient {
   }
 
   static restoreTempSession(planerContext, tsid, redisClient) {
-    return new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.temp);
+    var session = new SessionClient(planerContext, tsid, redisClient, redis_key_prefix.temp);
+    session.ttl = 5 * 60;
+    return session;
   }
 }
 
