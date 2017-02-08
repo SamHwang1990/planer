@@ -6,15 +6,20 @@
 
 const {
     UserInfo: UserInfoDal,
-    UserPassword: UserPasswordDal
+    UserPassword: UserPasswordDal,
+    DocumentUpdateExecutor
 } = require('../../dal');
 
 const {
-    UserInfo: UserInfoModel,
-    UserPassword: UserPasswordModel
+    UserInfo: UserInfoModel
 } = require('../../models');
 
-const PlanerError = require('.././error');
+const PlanerError = require('../../utils/error');
+
+// User Class 的私有属性
+const PrivateProperties = {
+  userInfoDocument: new WeakMap()
+};
 
 class User {
   constructor(email) {
@@ -22,27 +27,42 @@ class User {
   }
 
   *getUserInfo() {
-    if (!this._userInfo) {
-      this._userInfo = yield UserInfoDal.query({email: this.email});
+    let userInfoDoc = PrivateProperties.userInfoDocument.get(this);
+
+    if (userInfoDoc === undefined) {
+      userInfoDoc = yield UserInfoDal.query({email: this.email});
+      PrivateProperties.userInfoDocument.set(this, userInfoDoc);
     }
 
-    return this._userInfo;
+    return userInfoDoc;
   }
 
-  *updateUserInfo() {
-
+  *prepareUpdateUserInfo() {
+    return DocumentUpdateExecutor.newExecutor(yield this.getUserInfo());
   }
 
-  *destroyUser() {
-
+  *isExisted() {
+    return (yield this.getUserInfo()) != null;
   }
 
-  *upsertUserPassword() {
-
+  *verifyPassword(password) {
+    return yield UserPasswordDal.checkPassword({user_email: this.email, password});
   }
 
-  *cleanUserPassword() {
+  *upsertPassword(password) {
+    return yield UserPasswordDal.updatePassword({email: this.email, password});
+  }
 
+  *cleanPassword() {
+    let cleanResult = yield UserPasswordDal.cleanPassword({email: this.email});
+
+    if (cleanResult.ok !== 1) {
+      throw new PlanerError.BasicError(
+          { info: { user_email: this.email, cleanResult } },
+          'clean user password info operation executed incorrectly.');
+    }
+
+    return cleanResult;
   }
 
   static *createUserInfo(userInfo = {}) {
@@ -56,12 +76,41 @@ class User {
     return new User(userInfo.get('email'));
   }
 
-  static *registerUserInfo({email, nickname, status, remark, password} = {}) {
+  static *deleteUser({email} = {}) {
+    if (!email) {
+      throw new PlanerError.InvalidParameterError('delete user failed: email parameter can not be empty.');
+    }
 
+    let user = new User(email);
+
+    try {
+      yield user.cleanPassword();
+    } catch (e) {
+      // todo: log error
+    }
+
+    let deleteUserInfoResult = yield UserInfoDal.remove({email});
+    if (deleteUserInfoResult.ok !== 1) {
+      throw new PlanerError.BasicError(
+          { info: { email, deleteUserInfoResult } },
+          'delete user info operation executed incorrectly.');
+    }
   }
 
-  static *restoreUserInfo({email} = {}) {
+  static *restoreUser({email} = {}) {
+    if (!email) {
+      throw new PlanerError.InvalidParameterError('delete user failed: email parameter can not be empty.');
+    }
 
+    let user = new User(email);
+
+    if (yield user.isExisted()) {
+      return user;
+    } else {
+      throw new PlanerError.BasicError(
+          { info: { code: PlanerError.CODE.FA_USER_NOT_FOUND } },
+          'restore user failed because of user not found.');
+    }
   }
 }
 

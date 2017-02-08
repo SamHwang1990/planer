@@ -22,7 +22,7 @@ exports.updatePassword = function* updateUserPassword({email, password} = {}) {
   if (email == null) throw new PlanerError.InvalidParameterError('update user password failed: email parameter can not be empty.');
   if (password == null) throw new PlanerError.InvalidParameterError('update user password failed: password parameter can not be empty.');
 
-  var userInfo = yield UserInfoDal.query({email});
+  let userInfo = yield UserInfoDal.query({email});
   if (userInfo == null) throw new PlanerError.BasicError({info: {code: PlanerError.CODE.FA_USER_NOT_FOUND}}, `update user password failed: user not found with ${email}`);
 
   function* newPasswordHistory(password) {
@@ -45,7 +45,7 @@ exports.updatePassword = function* updateUserPassword({email, password} = {}) {
     return passwordInfo;
   }
 
-  var userPassword = yield UserPasswordModel.findOne({user_email: email});
+  let userPassword = yield UserPasswordModel.findOne({user_email: email});
 
   if (userPassword == null) {
     let newPasswordInfo = yield newPasswordHistory(password);
@@ -98,7 +98,7 @@ exports.checkPassword = function* checkUserPassword({user_email, password} = {})
   if (user_email == null) throw new PlanerError.InvalidParameterError('check user password failed: user_id parameter can not be empty.');
   if (password == null) throw new PlanerError.InvalidParameterError('check user password failed: password parameter can not be empty.');
 
-  var userPassword = yield UserPasswordModel.findOne({user_email});
+  let userPassword = yield UserPasswordModel.findOne({user_email});
   if (userPassword == null) throw new PlanerError.BasicError({info: {code: PlanerError.CODE.FA_PASSWORD_EMPTY}}, `check user password failed: user ${email} has no password yet.`);
 
   password = (yield crypto_pbkdf2_thunk(password, userPassword.salt)).toString('hex');
