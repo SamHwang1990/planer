@@ -22,11 +22,14 @@ exports.create = function createUserInfo(userInfo) {
   return new Promise((resolve, reject) => {
     if (userInfo == null) return reject(new PlanerError.InvalidParameterError(`create userinfo failed: parameter can not be empty.`));
 
-    userInfo = Object.assign({status: 'active'}, userInfo);
+    if (!(userInfo instanceof UserInfoModel)) {
+      userInfo = Object.assign({status: 'active'}, userInfo);
+      userInfo = new UserInfoModel(userInfo);
+    }
 
-    UserInfoModel.create(userInfo, function UserInfoModelCreateCallback(err, user) {
+    userInfo.save(function UserInfoModelCreateCallback(err) {
       if (err) return reject(err);
-      resolve(user);
+      resolve(userInfo.toObject());
     });
   });
 };
