@@ -7,13 +7,13 @@
 const {
   UserInfo: UserInfoDal,
   UserPassword: UserPasswordDal
-} = require('../../dal/index');
+} = require('../../../libs/dal/index');
 
-const PlanerError = require('.././error');
-const APIBase = require('.././API/index');
+const PlanerError = require('../../../libs/utils/error');
+const APIBase = require('../../../libs/modules/API/index');
 
 function* createUser() {
-  var { email, nickname, status, remark, } = this.request.body;
+  let { email, nickname, status, remark, } = this.request.body;
 
   if (!email) {
     throw new PlanerError.InvalidParameterError('create user failed: email parameter can not be empty.');
@@ -29,28 +29,29 @@ function* createUser() {
 }
 
 function* updateUserInfo() {
-  var { email, nickname, status, remark, } = this.request.body;
+  let { email, nickname, status, remark, } = this.request.body;
 
   if (!email) {
     throw new PlanerError.InvalidParameterError('update user failed: email parameter can not be empty.');
   }
 
-  var obsoleteInfo = yield UserInfoDal.update({email, nickname, status, remark});
+  let obsoleteInfo = yield UserInfoDal.update({email, nickname, status, remark});
   return APIBase.exportResult(APIBase.exportCode.S_OK, {obsoleteInfo});
 }
 
 function* deleteUser() {
-  var { email } = this.request.body;
+  let { email } = this.request.body;
 
-  var deleteUserInfoResult = yield UserInfoDal.remove({email});
+  let deleteUserInfoResult = yield UserInfoDal.remove({email});
   if (deleteUserInfoResult.ok !== 1) {
     throw new PlanerError.BasicError(
         { info: { deleteUserInfoResult } },
         'delete user info operation executed incorrectly.');
   }
 
+  let deleteUserPasswordResult;
   try {
-    var deleteUserPasswordResult = yield UserPasswordDal.cleanPassword({email});
+    deleteUserPasswordResult = yield UserPasswordDal.cleanPassword({email});
   } catch (e) {
     throw new PlanerError.BasicError({
       cause: e,
@@ -65,19 +66,19 @@ function* deleteUser() {
 }
 
 function* getUserInfo() {
-  var { email } = this.request.body;
+  let { email } = this.request.body;
 
   return yield UserInfoDal.query({ email });
 }
 
 function* createUserPassword() {
-  var { email, password } = this.request.body;
+  let { email, password } = this.request.body;
 
   yield UserPasswordDal.updatePassword({email, password});
 }
 
 function* createUserInfoAndPassword() {
-  var newUser = yield createUser;
+  let newUser = yield createUser;
   try {
     yield createUserPassword;
   } catch (e) {
@@ -88,7 +89,7 @@ function* createUserInfoAndPassword() {
 }
 
 function* updateUserPassword() {
-  var { email, password } = this.request.body;
+  let { email, password } = this.request.body;
   yield UserPasswordDal.updatePassword({email, password});
   return APIBase.exportResult(APIBase.exportCode.S_OK);
 }

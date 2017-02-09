@@ -5,24 +5,27 @@
 'use strict';
 
 class DocumentUpdateExecutor {
-  constructor(document) {
+  constructor(document, pathFilter) {
     this._document = document;
     this._pathSet = [];
+    this._pathFilter = pathFilter;
   }
 
   // 参数意义参见mongoose/document.js/set
   set(path, value, type, options) {
-    if (['email', '_id'].indexOf(path) >= 0) return;
+    if (Object.prototype.toString.call(this._pathFilter) === '[object Function]') {
+      if (!this._pathFilter(path)) return false;
+    }
 
     this._pathSet.push([path, value, type, options]);
   }
 
-  unset() {
+  reset() {
     this._pathSet.length = 0;
   }
 
   abort() {
-    this.unset();
+    this.reset();
     this._document = null;
   }
 

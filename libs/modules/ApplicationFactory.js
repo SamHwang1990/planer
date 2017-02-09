@@ -15,7 +15,7 @@ class PlanerApplication {
     if (!this.redisClient) {
       // 这里没有接受和区分redis connect 的error, 会导致即使连接失败,也会不断尝试
       this.redisStore = yield new Promise((resolve, reject) => {
-        var redisStore = RedisConnectClient.connect();
+        let redisStore = RedisConnectClient.connect();
         redisStore.on('error', err => {
           reject(err);
         });

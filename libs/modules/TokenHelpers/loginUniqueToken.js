@@ -41,7 +41,7 @@ function decodeCookieValue(value) {
 }
 
 function encodeCookieValue(sid, nonce) {
-  var value = sid + nonce;
+  let value = sid + nonce;
   return new Buffer(value).toString('base64');
 }
 
@@ -54,7 +54,7 @@ function newTokenNonce() {
 }
 
 function* verifyToken(planerContext) {
-  var tokenInCookie = tokenCookieStore.get(planerContext.context);
+  let tokenInCookie = tokenCookieStore.get(planerContext.context);
 
   if (!tokenInCookie) {
     return {
@@ -63,7 +63,7 @@ function* verifyToken(planerContext) {
     }
   }
 
-  var {sid, nonce} = decodeCookieValue(tokenInCookie);
+  let {sid, nonce} = decodeCookieValue(tokenInCookie);
   if (!sid) {
     return {
       errorCode: PlanerError.CODE.FA_INVALID_SESSION,
@@ -78,7 +78,7 @@ function* verifyToken(planerContext) {
     }
   }
 
-  var session = SessionClient.restoreLoginSession(planerContext, sid, (yield planerContext.getRedisClient()));
+  let session = SessionClient.restoreLoginSession(planerContext, sid, (yield planerContext.getRedisClient()));
   if (!(yield session.isAlived())) {
     return {
       errorCode: PlanerError.CODE.FA_INVALID_LOGIN_SESSION,
@@ -86,7 +86,7 @@ function* verifyToken(planerContext) {
     }
   }
 
-  var currentNonceOfSession = yield session.getAttr('nonce');
+  let currentNonceOfSession = yield session.getAttr('nonce');
   if (currentNonceOfSession == null || currentNonceOfSession !== nonce) {
     return {
       errorCode: PlanerError.CODE.FA_INVALID_LOGIN_SESSION,
@@ -102,7 +102,7 @@ function* verifyToken(planerContext) {
 // 清除redis 中和cookie 中的session 记录
 // 当用户成功登录时应该触发该步骤
 function* cleanToken(planerContext) {
-  var tokenInCookie = tokenCookieStore.get(planerContext.context);
+  let tokenInCookie = tokenCookieStore.get(planerContext.context);
 
   if (tokenInCookie) {
     let {sid} = decodeCookieValue(tokenInCookie);
@@ -114,7 +114,7 @@ function* cleanToken(planerContext) {
 }
 
 function* upsertToken(planerContext) {
-  var tokenInCookie = tokenCookieStore.get(planerContext.context);
+  let tokenInCookie = tokenCookieStore.get(planerContext.context);
 
   if (tokenInCookie) {
     let {sid} = decodeCookieValue(tokenInCookie);

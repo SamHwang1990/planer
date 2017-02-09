@@ -10,7 +10,12 @@ const PlanerError = require('../utils/error');
 
 const restJsonWebTokenHelpers = require('./TokenHelpers/restJsonWebToken');
 
-const UserInfoDal = require('../dal/user_info');
+const UserContext = require('./UserInfo');
+
+const PrivateProperties = {
+  user: new WeakMap(),
+  session: new WeakMap()
+};
 
 class PlanerContext {
   constructor(koaContext) {
@@ -24,7 +29,9 @@ class PlanerContext {
   }
 
   *getRestSession() {
-    if (!this._session || !(this._session instanceof SessionClient)) {
+    let session = PrivateProperties.session.get(this);
+
+    if (!session || !(session instanceof SessionClient)) {
       let verifyResult = yield restJsonWebTokenHelpers.verifyToken(this);
 
       if (verifyResult.errorCode != null) {
@@ -34,30 +41,34 @@ class PlanerContext {
         );
       }
 
-      this._session = yield SessionClient.restoreRestSession(this, verifyResult.sid, (yield this.getRedisClient()));
+      session = yield SessionClient.restoreRestSession(this, verifyResult.sid, (yield this.getRedisClient()));
+      PrivateProperties.session.set(this, session);
     }
 
-    return this._session;
+    return session;
   }
 
   setRestSession(sessionClient) {
     if (sessionClient instanceof SessionClient) {
-      this._session = sessionClient;
+      PrivateProperties.session.set(this, sessionClient);
     }
   }
 
   *getUser() {
-    if (!this._user) {
+    let user = PrivateProperties.user.get(this);
+    if (!user || !(user instanceof UserContext)) {
       let session = yield this.getRestSession();
       let user_email = yield session.getAttr('user_email');
-      this._user = yield UserInfoDal.query({email: user_email});
+
+      user = yield UserContext.restoreUser({email: user_email});
+      PrivateProperties.user.set(this, user);
     }
-    return this._user;
+    return user;
   }
 
-  setUser(userInfo = {}) {
-    if (userInfo.hasOwnProperty('email')) {
-      this._user = userInfo;
+  setUser(userContext = {}) {
+    if (userContext instanceof UserContext) {
+      PrivateProperties.user.set(this, userContext);
     }
   }
 

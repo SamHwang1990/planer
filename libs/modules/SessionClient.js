@@ -60,7 +60,7 @@ class SessionClient {
   *setTTL(expired) {
     this._ttl = expired;
 
-    var expireResult = yield this.redisClient.EXPIRE(this.key, expired);
+    let expireResult = yield this.redisClient.EXPIRE(this.key, expired);
 
     if (expireResult !== 1) {
       throw new PlanerError.BasicError({
@@ -86,8 +86,8 @@ class SessionClient {
       throw new PlanerError.InvalidParameterError('create rest session failed: user email can not be empty.');
     }
 
-    var sid = uuid.v4();
-    var restSession = new RestSession(planerContext, sid, redisClient);
+    let sid = uuid.v4();
+    let restSession = new RestSession(planerContext, sid, redisClient);
 
     yield restSession.setAttr('user_id', userInfo.id);
     yield restSession.setAttr('user_email', userInfo.email);
@@ -101,10 +101,10 @@ class SessionClient {
   }
 
   static *newLoginSession(planerContext, redisClient) {
-    var tsid = loginUniqueToken.newTokenSid();
-    var nonce = loginUniqueToken.newTokenNonce();
+    let tsid = loginUniqueToken.newTokenSid();
+    let nonce = loginUniqueToken.newTokenNonce();
 
-    var loginSession = new LoginUniqueSession(planerContext, tsid, redisClient);
+    let loginSession = new LoginUniqueSession(planerContext, tsid, redisClient);
 
     yield loginSession.setAttr('nonce', nonce);
     yield loginSession.refreshTTL();
@@ -117,9 +117,9 @@ class SessionClient {
   }
 
   static *newTempSession(planerContext, redisClient) {
-    var tsid = uuid.v4();
+    let tsid = uuid.v4();
 
-    var loginSession = new TempSession(planerContext, tsid, redisClient);
+    let loginSession = new TempSession(planerContext, tsid, redisClient);
 
     yield loginSession.setAttr('.keep', 0);
     yield loginSession.refreshTTL();

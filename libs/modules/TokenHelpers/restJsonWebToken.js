@@ -137,13 +137,13 @@ function* verifyToken(planerContext) {
 
 // invoke after new rest session
 function* createToken(planerContext) {
-  var session = yield planerContext.getRestSession();
-  var user = yield planerContext.getUser();
+  let session = yield planerContext.getRestSession();
+  let user = yield planerContext.getUser();
 
-  var sessionTimeout = PlanerConfig.getMilliseconds('programs/JWT/timeout', '1d');
-  var jwtId = uid.sync(6);
+  let sessionTimeout = PlanerConfig.getMilliseconds('programs/JWT/timeout', '1d');
+  let jwtId = uid.sync(6);
 
-  var token = yield signToken(jwtId, {sid: session.sid, userInfo: user});
+  let token = yield signToken(jwtId, {sid: session.sid, userInfo: yield user.getUserInfo()});
   tokenCookieStore.set(planerContext.context, token, {
     httpOnly: true,
     maxAge: sessionTimeout
@@ -162,18 +162,18 @@ function cleanToken(planerContext) {
 }
 
 function* refreshToken(planerContext) {
-  var session = yield planerContext.getRestSession();
-  var redisClient = yield planerContext.getRedisClient();
-  var sid = session.sid;
-  var currentJti = yield session.getAttr('jwtId');
+  let session = yield planerContext.getRestSession();
+  let redisClient = yield planerContext.getRedisClient();
+  let sid = session.sid;
+  let currentJti = yield session.getAttr('jwtId');
 
   if (currentJti) {
     let tokenBlacklistGraceTime = PlanerConfig.getSeconds('programs/JWT/lifetime-grace-time', '1m');
     yield redisClient.SETEX(`${token_blacklist_redis_prefix}${currentJti}`, tokenBlacklistGraceTime, sid);
   }
 
-  var jwtId = uid.sync(6);
-  var token = yield signToken(sid, jwtId);
+  let jwtId = uid.sync(6);
+  let token = yield signToken(sid, jwtId);
   tokenCookieStore.set(planerContext.context, token);
 
   yield session.setAttr('jwtId', jwtId);

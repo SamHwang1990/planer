@@ -26,7 +26,7 @@ class User {
     this.email = email;
   }
 
-  *getUserInfo() {
+  *getUserInfo(toObject = true) {
     let userInfoDoc = PrivateProperties.userInfoDocument.get(this);
 
     if (userInfoDoc === undefined) {
@@ -34,11 +34,17 @@ class User {
       PrivateProperties.userInfoDocument.set(this, userInfoDoc);
     }
 
-    return userInfoDoc;
+    if (toObject === false) {
+      return userInfoDoc;
+    } else {
+      return userInfoDoc.toObject();
+    }
   }
 
   *prepareUpdateUserInfo() {
-    return DocumentUpdateExecutor.newExecutor(yield this.getUserInfo());
+    return DocumentUpdateExecutor.newExecutor(yield this.getUserInfo(false), function userInfoPathFilter(path) {
+      return ['email', '_id'].indexOf(path) < 0;
+    });
   }
 
   *isExisted() {
