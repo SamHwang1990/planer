@@ -28,6 +28,10 @@ class PlanerContext {
     return (yield this.planerApp.getRedisClient());
   }
 
+  get apiModulerExplorer() {
+    return this.planerApp.getAPIModuleExplorer();
+  }
+
   *getRestSession() {
     let session = PrivateProperties.session.get(this);
 

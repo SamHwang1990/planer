@@ -30,7 +30,7 @@ const tokenCookieStore = {
 };
 
 function* signToken(jwtId, {sid, userInfo} = {}) {
-  var secret = PlanerConfig.getString('programs/JWT/sign-secret', 'planer');
+  let secret = PlanerConfig.getString('programs/JWT/sign-secret', 'planer');
   if (!secret || secret.toLowerCase() === 'planer') {
     if (process.NODE_ENV === 'development') {
       // console.log('not secret or secret too simple');
@@ -54,7 +54,7 @@ function* signToken(jwtId, {sid, userInfo} = {}) {
 }
 
 function* verifyToken(planerContext) {
-  var tokenInCookie = tokenCookieStore.get(planerContext.context);
+  let tokenInCookie = tokenCookieStore.get(planerContext.context);
 
   if (!tokenInCookie) {
     return {
@@ -63,7 +63,7 @@ function* verifyToken(planerContext) {
     }
   }
 
-  var tokenPayload;
+  let tokenPayload;
   // jwt 校验
   try {
     tokenPayload = jwt.verify(tokenInCookie, PlanerConfig.getString('programs/JWT/sign-secret', 'planer'));
@@ -82,11 +82,11 @@ function* verifyToken(planerContext) {
     }
   }
 
-  var jwtId = tokenPayload.jti;
-  var tokenData = tokenPayload.data;
-  var sid = tokenPayload.data.sid;
-  var redisClient = yield planerContext.getRedisClient();
-  var session = yield SessionClient.restoreRestSession(planerContext, sid, redisClient);
+  let jwtId = tokenPayload.jti;
+  let tokenData = tokenPayload.data;
+  let sid = tokenPayload.data.sid;
+  let redisClient = yield planerContext.getRedisClient();
+  let session = yield SessionClient.restoreRestSession(planerContext, sid, redisClient);
 
   // jwt 指向的sid 不存在
   if (!(yield session.isAlived())) {

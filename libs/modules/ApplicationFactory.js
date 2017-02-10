@@ -5,6 +5,7 @@
 'use strict';
 
 const RedisConnectClient = require('../connect_client/redis');
+const APIModuleExplorer = require('./API/ModuleExplorer');
 
 class PlanerApplication {
   constructor(koaApplication) {
@@ -26,6 +27,14 @@ class PlanerApplication {
     }
 
     return this.redisStore.client;
+  }
+
+  getAPIModuleExplorer() {
+    if (!this.apiModuleExplorer) {
+      this.apiModuleExplorer = new APIModuleExplorer();
+    }
+
+    return this.apiModuleExplorer;
   }
 
   static getInstance(koaApplication) {
