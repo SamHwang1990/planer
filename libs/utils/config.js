@@ -12,7 +12,7 @@ const ms = require('ms');
 const cacheable = require('./cacheable');
 
 const config = {};
-const planerHome = process.env.PLANER_HOME || path.resolve(__dirname, '../');
+const planerHome = process.env.PLANER_HOME || path.resolve(__dirname, '../../');
 
 function loadConfig() {
   var confDir = path.join(planerHome, './conf');
@@ -63,12 +63,17 @@ function _convertToBoolean(v) {
 function compareConfigPriority(configSection, customDefault) {
   var confValue;
 
-  if (configSection.hasOwnProperty('used')) {
-    confValue = configSection.used;
-  } else if (customDefault != null) {
-    confValue = customDefault;
-  } else if (configSection.hasOwnProperty('default')) {
-    confValue = configSection.default;
+  if (Object.prototype.toString.apply(configSection) !== '[object Object]') {
+    // 基于getSectionBase 的实现, 若configSection 不是对象类型, 则意味着所请求的config path 是有配置的, 不再需要使用customDefault
+    confValue = configSection;
+  } else {
+    if (configSection.hasOwnProperty('used')) {
+      confValue = configSection.used;
+    } else if (customDefault != null) {
+      confValue = customDefault;
+    } else if (configSection.hasOwnProperty('default')) {
+      confValue = configSection.default;
+    }
   }
 
   return confValue;

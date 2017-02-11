@@ -64,7 +64,7 @@ class APIContext {
   }
 
   *execAPI() {
-    let funcModule = this.apiModulerExplorer.get(this.path);
+    let funcModule = this.apiModuleExplorer.get(this.path);
 
     if (funcModule == null) {
       this.setResultCode('FA_INVALID_METHOD');

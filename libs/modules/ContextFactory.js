@@ -10,7 +10,7 @@ const PlanerError = require('../utils/error');
 
 const restJsonWebTokenHelpers = require('./TokenHelpers/restJsonWebToken');
 
-const UserContext = require('./UserInfo');
+const UserContext = require('./UserContext');
 
 const PrivateProperties = {
   user: new WeakMap(),
@@ -28,7 +28,7 @@ class PlanerContext {
     return (yield this.planerApp.getRedisClient());
   }
 
-  get apiModulerExplorer() {
+  get apiModuleExplorer() {
     return this.planerApp.getAPIModuleExplorer();
   }
 
@@ -85,4 +85,6 @@ class PlanerContext {
   }
 }
 
-module.exports = PlanerContext;
+module.exports = {
+  getInstance: PlanerContext.getInstance
+};

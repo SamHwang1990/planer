@@ -32,6 +32,7 @@ const UserInfoSchema = new Schema({
 });
 
 // 暂时默认不返回group_id
+if (!UserInfoSchema.options.toObject) UserInfoSchema.options.toObject = {};
 UserInfoSchema.options.toObject.transform = function(doc, ret, options) {
   delete ret.id;
   delete ret.group_id;

@@ -4,7 +4,7 @@
 
 const redis = require('koa-redis');
 
-const PlanerConfig = require('./config');
+const PlanerConfig = require('../utils/config');
 
 const dbConfig = PlanerConfig.getSection('datasources/redis');
 

@@ -5,7 +5,7 @@
 "use strict";
 
 const UserInfoModel = require('../models').UserInfo;
-const PlanerError = require('./error');
+const PlanerError = require('../utils/error');
 
 exports.query = function queryUserInfo({email} = {}) {
   return new Promise((resolve, reject) => {

@@ -18,6 +18,11 @@ class APIModuleExplorer {
       }
       return;
     }
+
+    if (path instanceof WeakMap) {
+      this._modules = path;
+      return;
+    }
     
     if (Object.prototype.toString.call(path) === '[object Object]') {
       for (let modulePath of Object.keys(path)) {
