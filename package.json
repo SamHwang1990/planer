@@ -25,7 +25,7 @@
     "bunyan": "^1.8.5",
     "co-redis": "^2.1.1",
     "js-yaml": "^3.7.0",
-    "jsonwebtoken": "^7.2.1",
+    "jsonwebtoken": "^9.0.0",
     "koa": "^1.2.4",
     "koa-bodyparser": "^2.3.0",
     "koa-generic-session": "^1.11.4",
